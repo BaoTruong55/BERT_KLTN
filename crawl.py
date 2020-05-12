@@ -6,7 +6,6 @@ import requests
 
 index = 0
 prefix_id = 'id_'
-listData = []
 listCatelogy = [
   "https://www.lazada.vn/laptop/",
   "https://www.lazada.vn/may-tinh-de-ban-va-phu-kien/",
@@ -136,37 +135,40 @@ listCatelogy = [
   "https://www.lazada.vn/tui-deo-cheo-cho-nam/"
 ]
 
+with open('crawlLazada.csv', 'a+', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['id', 'text'])
 for k in listCatelogy:
     # ! Crawl item Id from catelogy
     URL = k
     content = requests.get(URL)
     soup = BeautifulSoup(content.text, 'html.parser') 
-
     rows = soup.find_all('script')         # Print all occurrences
     tam = rows[3].get_text().split("=",1)
-    convertStr = tam[1].replace("from", "shit")
+    convertStr = tam[1].replace("from", "a")
     convertStr = convertStr.replace("font-size", "a")
+    # convertStr = convertStr.replace("18", "a")
     jsonData = json.loads(convertStr, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     arrayID = []
     for i in jsonData.mods.listItems:
         arrayID.append(i.itemId)
     # print(arrayID)
+    print("======================================="+k+"=======================================")
     for j in arrayID:
-        urlData = "https://my.lazada.vn/pdp/review/getReviewList?itemId="+j+"&pageSize=10000000&filter=0&sort=0&pageNo=1&fbclid=IwAR3mZ9NyeFyf38-o2VFEO_GoHwMaOe79_SKsG63gEB9AmO7V-Jwv-12z9MA"
+        urlData = "https://my.lazada.vn/pdp/review/getReviewList?itemId="+j+"&pageSize=10000000&filter=0&sort=0&pageNo=1"
+        listData = []
+        print(urlData)
         with urllib.request.urlopen(urlData) as url:
-            if url != None:
-                data = url.read().decode()
-                data = json.loads(data, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-                if data.model.items != None:
-                    for x in data.model.items:
-                        if x.reviewContent != None:
-                            listData.append(x.reviewContent)
-
-with open('crawlLazada.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(['id', 'text'])
-    for i in listData:
-        id = prefix_id + '0' * (6 - len(str(index))) + str(index)
-        index = index + 1
-        print(i)
-        writer.writerow([id, i])
+            data = url.read().decode()
+            data = json.loads(data, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            if data.model.items != None:
+                for x in data.model.items:
+                    if x.reviewContent != None:
+                        listData.append(x.reviewContent)
+        with open('crawlLazada.csv', 'a+', newline='') as file:
+            writer = csv.writer(file)
+            for i in listData:
+                id = prefix_id + '0' * (6 - len(str(index))) + str(index)
+                index = index + 1
+                # print(i)
+                writer.writerow([id, i])
