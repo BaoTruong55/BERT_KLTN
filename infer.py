@@ -59,6 +59,7 @@ else:
 
 test_df = pd.read_csv(args.test_path,sep='\t').fillna("###")
 test_df.text = test_df.text.progress_apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
+
 X_test = convert_lines(test_df, vocab, bpe,args.max_sequence_length)
 
 preds_en = []
@@ -76,6 +77,39 @@ for fold in range(5):
         preds_fold = np.concatenate([preds_fold, y_pred])
     preds_fold = sigmoid(preds_fold)
     preds_en.append(preds_fold)
+
 preds_en = np.mean(preds_en,axis=0)
-test_df["label"] = (preds_en > 0.5).astype(np.int)
-test_df[["id","label"]].to_csv("submission.csv")
+test_df["label_test"] = (preds_en > 0.5).astype(np.int)
+test_df[["id","text","label_test"]].to_csv("submission.csv")
+test_df['result'] = np.where(test_df['label'] == test_df['label_test'], 'true', 'false')
+result_true = np.where(test_df['result'], 1, 0).sum()
+
+df_negatives = test_df[test_df['label'] == 0]
+df_possitives = test_df[test_df['label'] == 1]
+
+true_negatives = np.where(df_negatives['result'] == 'true', 1, 0).sum()
+false_negatives = np.where(df_negatives['result'] == 'false', 1, 0).sum()
+
+true_possitives = np.where(df_possitives['result'] == 'true', 1, 0).sum()
+false_possitives = np.where(df_possitives['result'] == 'false', 1, 0).sum()
+
+actual_positive = true_possitives + false_negatives
+recall = true_possitives / actual_positive
+
+precision = true_possitives / (true_possitives + false_possitives)
+
+f1 = 2 * (precision * recall)/ (precision + recall)
+
+total = (true_negatives + false_negatives + true_possitives + false_possitives)
+auc = (true_negatives + true_possitives) / total
+
+print('true_negatives:' + str(true_negatives))
+print('false_negatives:' + str(false_negatives))
+print('true_possitives:' + str(true_possitives))
+print('false_possitives:' + str(false_possitives))
+
+print('recall:' + str(recall))
+print('precision:' + str(precision))
+
+print('F1_score:' + str(f1))
+print('AUC', str(auc))
