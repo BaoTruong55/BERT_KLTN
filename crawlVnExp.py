@@ -28,7 +28,8 @@ def getChildrenComment(idPost, idParent):
             dataChildrenComments = newUrl.read().decode()
             dataChildrenComments = json.loads(dataChildrenComments, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             for i in dataChildrenComments.data.items:
-                listParentComments.append(i.content)
+                arrList = i.content.split(";",1)
+                listParentComments.append(arrList[-1])
 
 # ! Get parent comment in a post 
 def getParentComments(idPost):
