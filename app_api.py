@@ -169,7 +169,7 @@ class Vnexpress(Resource):
         df_output = DataFrame(df_result, columns= ['data_text', 'label_test'])
         df_negatives = df_output[df_output['label_test'] == 0]
         df_possitives = df_output[df_output['label_test'] == 1]
-        output = {"data": df_output.to_dict("records"), "pos": len(df_possitives.index), "neg": len(df_negatives.index)}
+        output = {"commentPos": df_possitives.to_dict("records"), "commentNeg": df_negatives.to_dict("records"), "pos": len(df_possitives.index), "neg": len(df_negatives.index)}
         result = Response(json.dumps(output), mimetype='application/json')
         return result
         

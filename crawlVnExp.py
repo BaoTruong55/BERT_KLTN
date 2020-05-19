@@ -10,7 +10,7 @@ url = "4098456"
 listIdPost = []
 
 postAMonth = "https://timkiem.vnexpress.net/?q=covid&media_type=all&fromdate=&todate=&latest=&cate_code=the-gioi&search_f=title,tag_list&date_format=month&page="
-
+postDay = "https://timkiem.vnexpress.net/?q=covid&media_type=all&fromdate=&todate=&latest=&cate_code=the-gioi&search_f=title,tag_list&date_format=day&page="
 # ! Get id post from url search
 def getIdPost(URL):
     content = requests.get(URL)
@@ -56,8 +56,8 @@ def writeCSVFile(listData):
 with open('crawlVnExp.csv', 'w', newline='') as file:
       writer = csv.writer(file)
       writer.writerow(['id', 'text'])
-for i in range(50):
-    getIdPost(postAMonth+str(i))
+for i in range(5):
+    getIdPost(postDay+str(i))
     print("Pages: ["+str(i+1)+"]"+" Number of post: "+str(len(listIdPost)))
 print(listIdPost)
 for j in listIdPost:
