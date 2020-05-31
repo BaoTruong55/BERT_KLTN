@@ -46,12 +46,12 @@ parser.add_argument('--ckpt_path', type=str, default='./models')
 parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",type=str, help='path to fastBPE BPE')
 
 args = parser.parse_args("""--test_path ./data2/data/test.csv
---dict_path /media/henry/HENRY/Finally-16-20/suicao/suicao.raw/PhoBERT_base_transformers/dict.txt
---config_path /media/henry/HENRY/Finally-16-20/suicao/suicao.raw/PhoBERT_base_transformers/config.json
---bpe-codes /media/henry/HENRY/Finally-16-20/suicao/suicao.raw/PhoBERT_base_transformers/bpe.codes
---pretrained_path /media/henry/HENRY/Finally-16-20/suicao/suicao.raw/PhoBERT_base_transformers/model.bin
---ckpt_path /media/henry/HENRY/Finally-16-20/suicao/suicao.raw/train_and_sub_20k
---rdrsegmenter_path /media/henry/HENRY/Finally-16-20/suicao/suicao.raw/BERT_KLTN/VnCoreNLP/VnCoreNLP-1.1.1.jar""".split())
+--dict_path ./PhoBERT_base_transformers/dict.txt
+--config_path ./PhoBERT_base_transformers/config.json
+--bpe-codes ./PhoBERT_base_transformers/bpe.codes
+--pretrained_path ./PhoBERT_base_transformers/model.bin
+--ckpt_path ./models
+--rdrsegmenter_path ./VnCoreNLP/VnCoreNLP-1.1.1.jar""".split())
 bpe = fastBPE(args)
 rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
 
@@ -132,7 +132,8 @@ def getChildrenComment(idPost, idParent, listParentComments):
     with urllib.request.urlopen(url) as newUrl:
         if newUrl != None:
             dataChildrenComments = newUrl.read().decode()
-            dataChildrenComments = json.loads(dataChildrenComments, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            dataChildrenComments = json.loads(dataChildrenComments,
+                object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             for i in dataChildrenComments.data.items:
                 arrList = i.content.split(";",1)
                 listParentComments.append(arrList[-1])
@@ -144,7 +145,8 @@ def getParentComments(idPost):
     with urllib.request.urlopen(url) as newUrl:
         if newUrl != None:
             dataParentComments = newUrl.read().decode()
-            dataParentComments = json.loads(dataParentComments, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+            dataParentComments = json.loads(dataParentComments,
+                object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
             for i in dataParentComments.data.items:
                 listParentComments.append(i.content)
                 getChildrenComment(idPost, i.parent_id, listParentComments)

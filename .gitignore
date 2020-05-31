@@ -1,0 +1,5 @@
+models/**
+__pycache__/**
+VnCoreNLP/**
+PhoBERT_base_transformers/**
+PhoBERT_large_transformers/**
