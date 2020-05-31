@@ -73,4 +73,4 @@ for m in listCategory:
                         id = prefix_id + '0' * (6 - len(str(index))) + str(index)
                         index = index + 1
                         writer.writerow([id, i])
-    print("=====================================================================================================")
+    print("="*100)
