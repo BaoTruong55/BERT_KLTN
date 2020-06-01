@@ -23,9 +23,17 @@ def getIdPostByTopic(URL, date):
     listIdPost = []
     content = requests.get(URL)
     soup = BeautifulSoup(content.text, 'html.parser') 
-    idPost = soup.find("meta", attrs={"name": "tt_article_id"})['content']
-    for element in soup.find_all('span', attrs={"data-objectid":True}):
-        listIdPost.append(element.get('data-objectid'))
+    # idPost = soup.find("meta", attrs={"name": "tt_article_id"})['content']
+    for elementSource in soup.find_all('article', attrs={"class": "item-news-common"}):
+        # listIdPost.append(element.get('data-objectid'))
+        print(elementSource)
+        # soupEl = BeautifulSoup(elementSource, 'html.parser') 
+        link = elementSource.find('a', attrs={'class': 'count_cmt'})
+        objectId = elementSource.find('span', attrs={'data-objectid': True})
+
+        # print(link.attrs['href'])
+        print(objectId.attrs['data-objectid'])
+        # print(element)
     timePublic = []
     for element in soup.find_all('span', attrs={"class": "time-public"}):
         timePublic.append(element.text)
@@ -137,24 +145,24 @@ with open(pathSaveCSV, 'w', newline='') as file:
 # listIdPost = getIdPostByCategory(categoryThoiSu, '1/4/2020', '26/5/2020')
 listIdPost = getIdPostByPage(tagCovid, 2)
 print(listIdPost)
-totalPost = len(listIdPost)
-for index, idPost in enumerate(listIdPost, start = 1):
-    print("Post[{index}/{total}]: [{post}]".format(
-        post = idPost,
-        index = index,
-        total = totalPost
-    ))
-    listComments = getComments(str(idPost))
-    totalComment = len(listComments)
-    for index, comment in enumerate(listComments, start = 1):
-        print('[{index}/{totalComment}] - {comment}'.format(
-            comment = comment,
-            index = index,
-            totalComment = totalComment
-            ))
-        Comment(
-            comment = comment
-        ).save()
+# totalPost = len(listIdPost)
+# for index, idPost in enumerate(listIdPost, start = 1):
+#     print("Post[{index}/{total}]: [{post}]".format(
+#         post = idPost,
+#         index = index,
+#         total = totalPost
+#     ))
+#     listComments = getComments(str(idPost))
+#     totalComment = len(listComments)
+#     for index, comment in enumerate(listComments, start = 1):
+#         print('[{index}/{totalComment}] - {comment}'.format(
+#             comment = comment,
+#             index = index,
+#             totalComment = totalComment
+#             ))
+#         Comment(
+#             comment = comment
+#         ).save()
         
-    writeCSVFile(listComments, total)
-    total = total + totalComment
+#     writeCSVFile(listComments, total)
+#     total = total + totalComment
