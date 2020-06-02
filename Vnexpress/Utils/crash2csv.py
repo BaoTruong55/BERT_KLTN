@@ -6,6 +6,8 @@ import os
 if not os.path.exists("./data"):
     os.mkdir("./data")
 
+print("import success crash2csv")
+
 ### Cleaning training file
 
 train = open("./raw/train.crash").readlines()

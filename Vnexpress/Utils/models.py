@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from transformers import *
 
-print('import success transformers')
+print('import success models')
 
 class AlbertPreTrainedModel(PreTrainedModel):
     config_class = AlbertConfig

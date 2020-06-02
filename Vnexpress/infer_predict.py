@@ -80,13 +80,13 @@ def NomalizeData(comments):
     df = pd.DataFrame({"text": comments, "data_text": comments})
 
     df.text = df.text.progress_apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
-    print(df)
+
     return df
 
 def PredictData(df):
     X_test = convert_lines(df, vocab, bpe,args.max_sequence_length)
     preds_en = []
-    for fold in range(1):
+    for fold in range(5):
         print(f"Predicting for fold {fold}")
         preds_fold = []
         model_bert.load_state_dict(torch.load(os.path.join(args.ckpt_path, f"model_{fold}.bin")))
@@ -106,8 +106,5 @@ def PredictData(df):
         preds_en.append(preds_fold)
 
     preds_en = np.mean(preds_en,axis=0)
-    print(preds_en)
     df["label_test"] = (preds_en > 0.5).astype(np.int)
     return df
-
-print('abc')

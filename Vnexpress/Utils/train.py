@@ -241,7 +241,6 @@ for fold, (train_idx, val_idx) in enumerate(splits):
         best_th = 0
         score = f1_score(y[val_idx], val_preds > 0.5)
         print(f"\nAUC = {roc_auc_score(y[val_idx], val_preds):.4f}, F1 score @0.5 = {score:.4f}")
-        
         if score >= best_score:
             torch.save(
                 model_bert.state_dict(),
