@@ -21,13 +21,16 @@ class Vnexpress(Resource):
         url = request.args.get('url')
         idPost, title, description =  getInfoPost(url)
         comments = getComments(idPost)
+
         if len(comments) == 0:
             return {"Error": "The article has no comments"}
+        
         df = NomalizeData(comments)
         df_result = PredictData(df)
         df_output = DataFrame(df_result, columns= ['data_text', 'label_test'])
         df_negatives = df_output[df_output['label_test'] == 0]
         df_possitives = df_output[df_output['label_test'] == 1]
+        
         output = {
             "title": title,
             "description": description,
