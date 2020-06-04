@@ -43,7 +43,11 @@ parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",type=str, help=
 
 args = parser.parse_args()
 bpe = fastBPE(args)
-rdrsegmenter = VnCoreNLP(args.rdrsegmenter_path, annotators="wseg", max_heap_size='-Xmx500m') 
+rdrsegmenter = VnCoreNLP(
+    args.rdrsegmenter_path,
+    annotators="wseg",
+    max_heap_size='-Xmx500m'
+) 
 
 seed_everything(69)
 
@@ -70,9 +74,19 @@ vocab.add_from_file(args.dict_path)
 
 # Load training data
 train_df = pd.read_csv(args.train_path,sep='\t').fillna("###")
-train_df.text = train_df.text.progress_apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
+train_df.text = train_df.text.progress_apply(
+    lambda x: ' '.join(
+        [' '.join(sent) for sent in rdrsegmenter.tokenize(x)]
+    )
+)
+
 y = train_df.label.values
-X_train = convert_lines(train_df, vocab, bpe,args.max_sequence_length)
+X_train = convert_lines(
+    train_df,
+    vocab,
+    bpe,
+    args.max_sequence_length
+)
 print(y)
 print(X_train)
 
@@ -80,25 +94,69 @@ print(X_train)
 param_optimizer = list(model_bert.named_parameters())
 no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
 optimizer_grouped_parameters = [
-    {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
-    {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    {
+        'params': [
+            p for n,
+            p in param_optimizer if not any(nd in n for nd in no_decay)
+        ],
+        'weight_decay': 0.01
+    },
+    {
+        'params': [
+            p for n,
+            p in param_optimizer if any(nd in n for nd in no_decay)
+        ],
+        'weight_decay': 0.0
+    }
 ]
+
 num_train_optimization_steps = int(args.epochs*len(train_df)/args.batch_size/args.accumulation_steps)
-optimizer = AdamW(optimizer_grouped_parameters, lr=args.lr, correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
-scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=100, num_training_steps=num_train_optimization_steps)  # PyTorch scheduler
+optimizer = AdamW(
+    optimizer_grouped_parameters,
+    lr=args.lr,
+    correct_bias=False
+)  # To reproduce BertAdam specific behavior set correct_bias=False
+
+scheduler = get_linear_schedule_with_warmup(
+    optimizer,
+    num_warmup_steps = 100,
+    num_training_steps = num_train_optimization_steps
+)  # PyTorch scheduler
+
 scheduler0 = get_constant_schedule(optimizer)  # PyTorch scheduler
 
 if not os.path.exists(args.ckpt_path):
     os.mkdir(args.ckpt_path)
 
 splits = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=123).split(X_train, y))
+
 for fold, (train_idx, val_idx) in enumerate(splits):
     print("Training for fold {}".format(fold))
     best_score = 0
     if fold != args.fold:
         continue
-    train_dataset = torch.utils.data.TensorDataset(torch.tensor(X_train[train_idx],dtype=torch.long), torch.tensor(y[train_idx],dtype=torch.long))
-    valid_dataset = torch.utils.data.TensorDataset(torch.tensor(X_train[val_idx],dtype=torch.long), torch.tensor(y[val_idx],dtype=torch.long))
+    train_dataset = torch.utils.data.TensorDataset(
+        torch.tensor(
+            X_train[train_idx],
+            dtype=torch.long
+        ),
+        torch.tensor(
+            y[train_idx],
+            dtype=torch.long
+        )
+    )
+
+    valid_dataset = torch.utils.data.TensorDataset(
+        torch.tensor(
+            X_train[val_idx],
+            dtype=torch.long
+        ),
+        torch.tensor(
+            y[val_idx],
+            dtype=torch.long    
+        )
+    )
+
     tq = tqdm(range(args.epochs + 1))
     for child in tsfm.children():
         for param in child.parameters():
@@ -118,17 +176,38 @@ for fold, (train_idx, val_idx) in enumerate(splits):
 
 # TODO: feature selection
         val_preds = []
-        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-        valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False)
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size = args.batch_size,
+            shuffle=True
+        )
+        valid_loader = torch.utils.data.DataLoader(
+            valid_dataset,
+            batch_size=args.batch_size,
+            suffle=False
+        )
         avg_loss = 0.
         avg_accuracy = 0.
 
         optimizer.zero_grad()
-        pbar = tqdm(enumerate(train_loader),total=len(train_loader),leave=False)
+        pbar = tqdm(
+            enumerate(train_loader),
+            total=len(train_loader),
+            leave=False
+        )
+
         for i,(x_batch, y_batch) in pbar:
             model_bert.train()
-            y_pred = model_bert(x_batch.cuda(), attention_mask=(x_batch>0).cuda())
-            loss =  F.binary_cross_entropy_with_logits(y_pred.view(-1).cuda(),y_batch.float().cuda())
+            y_pred = model_bert(
+                x_batch.cuda(),
+                attention_mask=(x_batch>0).cuda()
+            )
+
+            loss =  F.binary_cross_entropy_with_logits(
+                y_pred.view(-1).cuda(),
+                y_batch.float().cuda()
+            )
+            
             loss = loss.mean()
             loss.backward()
             if i % args.accumulation_steps == 0 or i == len(pbar) - 1:
@@ -143,16 +222,31 @@ for fold, (train_idx, val_idx) in enumerate(splits):
             avg_loss += loss.item() / len(train_loader)
 
         model_bert.eval()
-        pbar = tqdm(enumerate(valid_loader),total=len(valid_loader),leave=False)
+        pbar = tqdm(
+            enumerate(valid_loader),
+            total=len(valid_loader),
+            leave=False
+        )
+
         for i,(x_batch, y_batch) in pbar:
-            y_pred = model_bert(x_batch.cuda(), attention_mask=(x_batch>0).cuda())
+            y_pred = model_bert(
+                x_batch.cuda(),
+                attention_mask=(x_batch>0).cuda()
+            )
             y_pred = y_pred.squeeze().detach().cpu().numpy()
             val_preds = np.concatenate([val_preds, np.atleast_1d(y_pred)])
+
         val_preds = sigmoid(val_preds)
 
         best_th = 0
         score = f1_score(y[val_idx], val_preds > 0.5)
         print(f"\nAUC = {roc_auc_score(y[val_idx], val_preds):.4f}, F1 score @0.5 = {score:.4f}")
         if score >= best_score:
-            torch.save(model_bert.state_dict(),os.path.join(args.ckpt_path, f"model_{fold}.bin"))
+            torch.save(
+                model_bert.state_dict(),
+                os.path.join(
+                    args.ckpt_path,
+                    f"model_{fold}.bin"
+                )
+            )
             best_score = score
