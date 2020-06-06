@@ -7,13 +7,16 @@ import dateutil.parser
 from model_vnexpress import *
 import re
 import unidecode
+from datetime import date, timedelta
+from infer_predict import *
+import time
 
 index = 0
 PREFIX_ID = 'test_'
 total = 1
 pathSaveCSV = 'crawlVnExp-temp-da.csv'
 
-categoryThoiSu = "https://vnexpress.net/category/day?cateid=1001005&fromdate={fromdate}&todate={todate}&allcate=1001005&page={page}"
+# categoryThoiSu = "https://vnexpress.net/category/day?cateid=1001005&fromdate={fromdate}&todate={todate}&allcate=1001005&page={page}"
 
 tagCovid = "https://vnexpress.net/tag/covid-19-1266216-p{page}"
 
@@ -24,7 +27,7 @@ def getJsonFromURL(url):
     return dataJson
 
 def dateToTimestamp(date):
-    return dateutil.parser.parse(date, dayfirst=True).timestamp()
+    return int(dateutil.parser.parse(date, dayfirst=True).timestamp())
 
 def unmarkTiengViet(str):
     return unidecode.unidecode(str)
@@ -112,10 +115,15 @@ def getInfoPost(url):
 def getInfoPostByList(URL, date):
     listInfoPost = []
     content = requests.get(URL)
+<<<<<<< HEAD
     print(URL)
     soup = BeautifulSoup(content.text, 'html.parser')
     for elementSource in soup.find_all('article', attrs={"class": "item-news item-news-common"}):
         # soupEl = BeautifulSoup(str(elementSource), 'html.parser')
+=======
+    soup = BeautifulSoup(content.text, 'html.parser')
+    for elementSource in soup.find_all('article', attrs={"class": "item-news item-news-common"}):
+>>>>>>> remove csv
         link = elementSource.find('a', attrs={'class': 'count_cmt', 'href': True})
         if link != None:
             link = link['href']
@@ -123,9 +131,16 @@ def getInfoPostByList(URL, date):
         objectId = elementSource.find('span', attrs={'data-objectid': True})
         if objectId != None:
             objectId = objectId['data-objectid'] 
+<<<<<<< HEAD
         
         if link != None and objectId != None:
             listInfoPost.append({'link': link, 'id': objectId})
+=======
+        print(link)
+        if link != None and objectId != None:
+            listInfoPost.append({'link': link, 'id': objectId})
+        
+>>>>>>> remove csv
 
     timePublic = []
     for element in soup.find_all('span', attrs={"class": "time-public"}):
@@ -138,6 +153,9 @@ def getInfoPostByList(URL, date):
         status = False
     except:
         print()
+
+    if len(listInfoPost) == 0:
+        status = False
 
     return listInfoPost, status
 
@@ -152,6 +170,10 @@ def getChildrenComment(idPost, idParent):
     if type(dataComments['data']) is not list:
         for comment in dataComments['data']['items']:
             comments.append({
+<<<<<<< HEAD
+=======
+                'id': comment['comment_id'],
+>>>>>>> remove csv
                 'comment': comment['content'],
                 'createTime': comment['creation_time'],
                 'userLike': comment['userlike']
@@ -166,6 +188,10 @@ def getComments(idPost):
     if type(dataComments['data']) is not list:
         for comment in dataComments['data']['items']:
             comments.append({
+<<<<<<< HEAD
+=======
+                'id': comment['comment_id'],
+>>>>>>> remove csv
                 'comment': comment['content'],
                 'createTime': comment['creation_time'],
                 'userLike': comment['userlike']
@@ -218,6 +244,7 @@ def getInfoPostByPage(url, page):
             url.format(page = page_index),
             date = None
         )
+<<<<<<< HEAD
 
         infoPosts.extend(infoPostsPageCurrent)
         print("Pages: [{page}] Number of post: {numOfPost}".format(
@@ -239,10 +266,14 @@ def getInfoPostByCategory(url, fromdate, todate):
             fromdate = dateToTimestamp(fromdate),
             todate = dateToTimestamp(todate)
         ), date = None)
+=======
+
+>>>>>>> remove csv
         infoPosts.extend(infoPostsPageCurrent)
         print("Pages: [{page}] Number of post: {numOfPost}".format(
             page=page_index,
             numOfPost=len(infoPostsPageCurrent)
+<<<<<<< HEAD
         ))
         page_index = page_index + 1
         status = len(infoPostsPageCurrent) != 0
@@ -270,11 +301,108 @@ for index, post in enumerate(listInfoPost, start = 1):
             comment = comment['comment'],
             index = index,
             totalComment = totalComment
+=======
+>>>>>>> remove csv
         ))
 
-        Comment(
-            comment = comment['comment']
-        ).save()
+    # print(infoPosts)
+    return infoPosts
+
+
+def getInfoPostByCategory(category, fromdate, todate):
+    infoPosts = []
+    for item in category:
+        print(item)
+        status = True
+        page_index = 1
+        while status:
+            url = 'https://vnexpress.net/category/day?cateid={cateid}&allcate={allcate}&fromdate={fromdate}&todate={todate}&page={page}'.format(
+                        cateid = item['id'],
+                        allcate = item['id'],
+                        page = page_index,
+                        fromdate = dateToTimestamp(fromdate),
+                        todate = dateToTimestamp(todate)
+                    )
+            print(url)
+            infoPostsPageCurrent, status = getInfoPostByList(url, date = None)
+            infoPosts.extend(infoPostsPageCurrent)
+            print("Pages: [{page}] Number of post: {numOfPost}".format(
+                page=page_index,
+                numOfPost=len(infoPostsPageCurrent)
+            ))
+            page_index = page_index + 1
+            status = len(infoPostsPageCurrent) != 0
+
+    return infoPosts
+
+def getCategoryFromJson():
+    with open('./category.json') as f:
+        data = json.load(f)
         
+<<<<<<< HEAD
     writeCSVFile(comments, total)
     total = total + totalComment
+=======
+    return data
+
+def firstThingWriteCsv():
+    with open(pathSaveCSV, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['id', 'text'])
+
+def formatDate(date):
+    return str(f'{date:%d/%m/%Y}')
+
+def getCommentsText(item):
+    return item['comment']
+
+def getComment(item):
+    return item.comment
+
+def getCommentsId(item):
+    return item['id']
+
+if __name__ == '__main__':
+    start = time.time()
+    category = getCategoryFromJson()
+    today = formatDate(date.today())
+    fromDate  = formatDate(date.today() - timedelta(days=0))
+
+    listInfoPost = getInfoPostByCategory(category, fromDate, today)
+    # listInfoPost = removeDuplicate(getInfoPostByPage(tagCovid, 1))
+    print(listInfoPost)
+    # totalPost = len(listInfoPost)
+    # for index, post in enumerate(listInfoPost, start = 1):
+    #     print("Post[{index}/{total}]: [{post}]".format(
+    #         post = post['id'],
+    #         index = index,
+    #         total = totalPost
+    #     ))
+    #     comments = getComments(str(post['id']))
+    #     totalComment = len(comments)
+    #     if totalComment > 0:
+    #         commentText = list(map(getCommentsText, comments))
+    #         commentId = list(map(getCommentsId, comments))
+    #         print(commentText)
+    #         print(commentId)
+    #         df = NomalizeDataCommentVnexpress(commentId, commentText)
+    #         df_result = PredictData(df)
+            # print(df_result)
+        # for index, comment in enumerate(comments, start = 1):
+        #     print(comment)
+            # print('[{index}/{totalComment}] - {comment}'.format(
+            #     comment = comment['comment'],
+            #     index = index,
+            #     totalComment = totalComment
+            # ))
+            
+    #         Comment(
+    #             comment = comment['comment']
+    #         ).save()
+            
+    #     writeCSVFile(comments, total)
+        # total = total + totalComment
+    
+    end = time.time()
+    print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
+>>>>>>> remove csv
