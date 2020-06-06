@@ -341,7 +341,7 @@ def getInfoPostByCategory(category, fromdate, todate):
 def crawlAllNDays(N):
     category = getCategoryFromJson()
     today = formatDate(date.today())
-    fromDate  = formatDate(date.today() - timedelta(days=1))
+    fromDate  = formatDate(date.today() - timedelta(days=N))
 
     infoPosts = getInfoPostByCategory(category, fromDate, today)
     totalPost = len(infoPosts)
@@ -371,6 +371,10 @@ def crawlAllNDays(N):
 def crawlAllThreeDays():
     crawlAllNDays(3)
 
+
+def crawlAllAWeek():
+    crawlAllNDays(7)
+
 def crawlAllAMonth():
     crawlAllNDays(30)
 
@@ -390,7 +394,7 @@ if __name__ == '__main__':
     start = time.time()
    
     # crawlAllThreeDays()
-    crawlAllNDays(15)
+    crawlAllAWeek()
     predictComment()
 
     end = time.time()
