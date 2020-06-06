@@ -35,6 +35,27 @@ class Category(Document):
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db1'}
 
+class Topic(Document):
+    __version = DecimalField(default=1)
+    created = DateTimeField(default=datetime.datetime.utcnow)
+    # modify = DateTimeField(default=datetime.datetime.utcnow)
+    name = StringField(required=True, max_lenght=200)
+    alias = StringField(requires=False)
+    description = StringField(required=False)
+    posts = ListField(ReferenceField(Post))
+    meta = {'db_alias': 'db1'}
+
+class Category(Document):
+    __version = DecimalField(default=1)
+    created = DateTimeField(default=datetime.datetime.utcnow)
+    # modify = DateTimeField(default=datetime.datetime.utcnow)
+    name = StringField(required=True, max_lenght=200)
+    alias = StringField(requires=False)
+    description = StringField(required=False)
+    posts = ListField(ReferenceField(Post))
+    meta = {'db_alias': 'db1'}
+
+
 # category = Category(
 #     name='Thời sự',
 #     alias='thoi_su',

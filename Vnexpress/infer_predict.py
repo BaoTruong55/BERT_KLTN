@@ -34,7 +34,7 @@ parser.add_argument('--config_path', type=str, default="./phobert/config.json")
 parser.add_argument('--rdrsegmenter_path', type=str, required=True)
 parser.add_argument('--pretrained_path', type=str, default='./phobert/model.bin')
 parser.add_argument('--max_sequence_length', type=int, default=256)
-parser.add_argument('--batch_size', type=int, default=2)
+parser.add_argument('--batch_size', type=int, default=13)
 parser.add_argument('--ckpt_path', type=str, default='./models')
 parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",type=str, help='path to fastBPE BPE')
 
@@ -79,9 +79,25 @@ else:
 def NomalizeData(comments):
     df = pd.DataFrame({"text": comments, "data_text": comments})
 
-    df.text = df.text.progress_apply(lambda x: ' '.join([' '.join(sent) for sent in rdrsegmenter.tokenize(x)]))
+    df.text = df.text.progress_apply(
+        lambda x: ' '.join([
+            ' '.join(sent) for sent in rdrsegmenter.tokenize(x)
+        ])
+    )
 
     return df
+
+def NomalizeDataCommentVnexpress(commentId, comments):
+    df = pd.DataFrame({"id": commentId,"text": comments, "data_text": comments})
+
+    df.text = df.text.progress_apply(
+        lambda x: ' '.join([
+            ' '.join(sent) for sent in rdrsegmenter.tokenize(x)
+        ])
+    )
+
+    return df
+    
 
 def PredictData(df):
     X_test = convert_lines(df, vocab, bpe,args.max_sequence_length)
