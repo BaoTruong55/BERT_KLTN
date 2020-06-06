@@ -27,6 +27,11 @@ def getInfoTopic(idTopic, articleTopic):
     soup = BeautifulSoup(content.text, 'html.parser')
 
     description = soup.find('meta', attrs={'name': 'description'})['content']
+    if description != None:
+        description = description['content']
+    else:
+        description = ''
+
     title = soup.find('title').text
 
     topic = Topic(
@@ -99,11 +104,26 @@ def getInfoPost(url, idPost):
     if topicId != '':
         infoTopic = getInfoTopic(topicId, articleTopic)
 
-    description = soup.find('meta', attrs={'name': 'description'})['content']
-    publishTime = soup.find('meta', attrs={'name': 'its_publication'})['content']
-    idPost = soup.find('meta', attrs={'name': 'its_id'})['content']
+
     title = soup.find('title').text
-    thumbnailUrl = soup.find('meta', attrs={'itemprop': 'thumbnailUrl'})['content'] 
+    
+    description = soup.find('meta', attrs={'name': 'description'})
+    if description != None:
+        description = description['content']
+    else:
+        description = ''
+
+    publishTime = soup.find('meta', attrs={'name': 'its_publication'})
+    if publishTime != None:
+        publishTime = publishTime['content']
+    else:
+        publishTime = '0'
+    
+    thumbnailUrl = soup.find('meta', attrs={'itemprop': 'thumbnailUrl'})
+    if thumbnailUrl != None:
+        thumbnailUrl = thumbnailUrl['content']
+    else:
+        thumbnailUrl = 0
 
     post = Post(
         idPost = idPost,
