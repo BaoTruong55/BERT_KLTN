@@ -123,7 +123,7 @@ def getInfoPost(url, idPost):
     if thumbnailUrl != None:
         thumbnailUrl = thumbnailUrl['content']
     else:
-        thumbnailUrl = 0
+        thumbnailUrl = ''
 
     post = Post(
         idPost = idPost,
@@ -177,8 +177,8 @@ def getInfoPostByList(URL, date):
         
         objectId = elementSource.find('span', attrs={'data-objectid': True})
         if objectId != None:
-            objectId = objectId['data-objectid'] 
-
+            objectId = objectId['data-objectid']
+            
         if link != None and objectId != None:
             listInfoPost.append({'link': link, 'id': objectId})
         
