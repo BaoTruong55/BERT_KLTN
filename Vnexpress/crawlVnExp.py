@@ -10,7 +10,7 @@ import unidecode
 from datetime import date, timedelta
 import time
 from utils import *
-# from infer_predict import *
+from infer_predict import *
 
 pathSaveCSV = 'crawlVnExp-temp-da.csv'
 
@@ -213,7 +213,7 @@ def getComments(idPost):
     url = "https://usi-saas.vnexpress.net/index/get?limit=1000000&siteid=1000000&objecttype=1&objectid={objectid}".format(objectid = idPost)
     print(url)
     dataComments = getJsonFromURL(url)
-    print(dataComments)
+
     if 'data'in dataComments \
         and type(dataComments['data']) is not list:
         for item in dataComments['data']['items']:
@@ -355,7 +355,6 @@ def crawlAllNDays(N):
         ))
         comments = getComments(str(infoPost['id']))
         
-        
         totalComment = len(comments)
         for index, comment in enumerate(comments, start = 1):
             print('[{index}/{totalComment}] - {comment}'.format(
@@ -375,10 +374,24 @@ def crawlAllThreeDays():
 def crawlAllAMonth():
     crawlAllNDays(30)
 
+def predictComment():
+    comments  = Comment.objects(label=None)
+    print(len(comments))
+    if len(comments) > 0:
+        commentText = list(map(getCommentText, comments))
+        commentId = list(map(getCommentId, comments))
+        df = NomalizeDataCommentVnexpress(commentId, commentText)
+        df_result = PredictData(df)
+        for comment in comments:
+            comment.label = df_result[df_result['id'] == comment.idComment]['label']
+            comment.save() 
+    print('Done')
 if __name__ == '__main__':
     start = time.time()
    
-    crawlAllThreeDays()
-    
+    # crawlAllThreeDays()
+    crawlAllNDays(15)
+    predictComment()
+
     end = time.time()
     print(time.strftime("%H:%M:%S", time.gmtime(end - start)))

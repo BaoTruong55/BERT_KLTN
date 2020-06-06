@@ -122,5 +122,5 @@ def PredictData(df):
         preds_en.append(preds_fold)
 
     preds_en = np.mean(preds_en,axis=0)
-    df["label_test"] = (preds_en > 0.5).astype(np.int)
+    df["label"] = (preds_en > 0.5).astype(np.int)
     return df

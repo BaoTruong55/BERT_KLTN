@@ -27,7 +27,7 @@ class Vnexpress(Resource):
         
         df = NomalizeData(comments)
         df_result = PredictData(df)
-        df_output = DataFrame(df_result, columns= ['data_text', 'label_test'])
+        df_output = DataFrame(df_result, columns= ['data_text', 'label'])
         df_negatives = df_output[df_output['label_test'] == 0]
         df_possitives = df_output[df_output['label_test'] == 1]
         

@@ -5,11 +5,11 @@ import datetime
 connect('vnexpress', host='localhost', port=27017,  alias='db')
 
 class Comment(Document):
-    __version = DecimalField(default=3)
+    __version = DecimalField(default=4)
     idComment = StringField(required=True, unique = True)
     created = DateTimeField(default=datetime.datetime.utcnow)
     comment = StringField(required=True)
-    label = DecimalField()
+    label = IntField()
     createTime = DateTimeField()
     userLike = DecimalField()
     meta = {'db_alias': 'db'}

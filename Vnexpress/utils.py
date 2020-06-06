@@ -55,3 +55,9 @@ def getCategoryFromJson():
         data = json.load(f)
         
     return data
+
+def getCommentText(item):
+    return item.comment
+
+def getCommentId(item):
+    return item.idComment
