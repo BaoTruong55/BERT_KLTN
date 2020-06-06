@@ -109,7 +109,7 @@ def getInfoPost(url, idPost):
     
     description = soup.find('meta', attrs={'name': 'description'})
     if description != None:
-        description = description
+        description = description['content']
     else:
         description = ''
 
