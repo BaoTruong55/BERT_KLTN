@@ -8,7 +8,7 @@ from model_vnexpress import *
 import re
 import unidecode
 from datetime import date, timedelta
-from infer_predict import *
+# from infer_predict import *
 import time
 
 index = 0
@@ -46,7 +46,7 @@ def removeDuplicate(listInfoPost):
 def getInfoTopic(topicId, articleTopic):
     url = 'https://vnexpress.net/topic/{articleTopic}-{topicId}'.format(
         articleTopic = articleTopic,
-        topicId = articleTopic
+        topicId = topicId
     )
     content = requests.get(url)
     soup = BeautifulSoup(content.text, 'html.parser')
@@ -55,7 +55,7 @@ def getInfoTopic(topicId, articleTopic):
     title = soup.find('title').text
 
     return {
-        'topicId': topicId,
+        'id': topicId,
         'articleTopic': articleTopic, 
         'title': title,
         'description': description
@@ -67,7 +67,7 @@ def getInfoTag(listTag):
     tags = []
     for key, value in dataTag['data'].items():
         tags.append({
-            "id": value['tag_id'],
+            "id": str(value['tag_id']),
             "name": value['tag_name'],
             "url": value['tag_url']
         })
@@ -93,19 +93,57 @@ def getInfoPost(url):
     else:
         articleTopic = ''
 
-    listTag = re.findall("{'tag_id':'(.*?)'}", script.text)
-    if len(listTag) != 0:
-        listTag = listTag[0].split(', ')
+    tagIds = re.findall("{'tag_id':'(.*?)'}", script.text)
+    if len(tagIds) != 0:
+        tagIds = tagIds[0].split(', ')
     else:
-        listTag = []    
-    getInfoTag(listTag)
+        tagIds = []
+    
+    
+    infoTags = {}
+    if len(tagIds) != 0:
+        infoTags = getInfoTag(tagIds)
+
+    infoTopic = {}
+    if topicId != '':
+        infoTopic = getInfoTopic(topicId, articleTopic)
+
 
     description = soup.find('meta', attrs={'name': 'description'})['content']
+    publishTime = soup.find('meta', attrs={'name': 'its_publication'})['content']
     idPost = soup.find('meta', attrs={'name': 'its_id'})['content']
     title = soup.find('title').text
+    thumbnail = soup.find('meta', attrs={'itemprop': 'thumbnailUrl'})['content'] 
 
     return {
-    
+        'id': idPost,
+        'title': title,
+        'description': description,
+        'topicId': topicId,
+        'tagIds': tagIds,
+        'publishTime': publishTime,
+        'thumbnail': thumbnail,
+        'link': url
+    }, infoTags, infoTopic
+
+def getInfoCategory(idCategory, title):
+    today = formatDate(date.today())
+    url = 'https://vnexpress.net/category/day?cateid={cateid}&allcate={allcate}&fromdate={fromdate}&todate={todate}&page={page}'.format(
+        cateid = idCategory,
+        allcate = idCategory,
+        page = 1,
+        fromdate = dateToTimestamp(today),
+        todate = dateToTimestamp(today)
+    )
+    content = requests.get(url)
+    soup = BeautifulSoup(content.text, 'html.parser')
+
+    description = soup.find('meta', attrs={'name': 'description'})['content']
+
+    return {
+        'id': idCategory,
+        'title': title,
+        'description': description
     }
 
 # getInfoPost('https://vnexpress.net/cong-to-vien-co-lan-can-khi-xem-ho-so-vu-luong-huu-phuoc-4109080.html')
@@ -115,15 +153,8 @@ def getInfoPost(url):
 def getInfoPostByList(URL, date):
     listInfoPost = []
     content = requests.get(URL)
-<<<<<<< HEAD
-    print(URL)
     soup = BeautifulSoup(content.text, 'html.parser')
     for elementSource in soup.find_all('article', attrs={"class": "item-news item-news-common"}):
-        # soupEl = BeautifulSoup(str(elementSource), 'html.parser')
-=======
-    soup = BeautifulSoup(content.text, 'html.parser')
-    for elementSource in soup.find_all('article', attrs={"class": "item-news item-news-common"}):
->>>>>>> remove csv
         link = elementSource.find('a', attrs={'class': 'count_cmt', 'href': True})
         if link != None:
             link = link['href']
@@ -131,16 +162,10 @@ def getInfoPostByList(URL, date):
         objectId = elementSource.find('span', attrs={'data-objectid': True})
         if objectId != None:
             objectId = objectId['data-objectid'] 
-<<<<<<< HEAD
-        
-        if link != None and objectId != None:
-            listInfoPost.append({'link': link, 'id': objectId})
-=======
         print(link)
         if link != None and objectId != None:
             listInfoPost.append({'link': link, 'id': objectId})
         
->>>>>>> remove csv
 
     timePublic = []
     for element in soup.find_all('span', attrs={"class": "time-public"}):
@@ -170,10 +195,7 @@ def getChildrenComment(idPost, idParent):
     if type(dataComments['data']) is not list:
         for comment in dataComments['data']['items']:
             comments.append({
-<<<<<<< HEAD
-=======
                 'id': comment['comment_id'],
->>>>>>> remove csv
                 'comment': comment['content'],
                 'createTime': comment['creation_time'],
                 'userLike': comment['userlike']
@@ -188,10 +210,7 @@ def getComments(idPost):
     if type(dataComments['data']) is not list:
         for comment in dataComments['data']['items']:
             comments.append({
-<<<<<<< HEAD
-=======
                 'id': comment['comment_id'],
->>>>>>> remove csv
                 'comment': comment['content'],
                 'createTime': comment['creation_time'],
                 'userLike': comment['userlike']
@@ -244,8 +263,6 @@ def getInfoPostByPage(url, page):
             url.format(page = page_index),
             date = None
         )
-<<<<<<< HEAD
-
         infoPosts.extend(infoPostsPageCurrent)
         print("Pages: [{page}] Number of post: {numOfPost}".format(
             page=page_index,
@@ -255,66 +272,102 @@ def getInfoPostByPage(url, page):
     # print(infoPosts)
     return infoPosts
 
+def props(x):
+    return dict((key, getattr(x, key)) for key in dir(x) if key not in dir(x.__class__))
 
-def getInfoPostByCategory(url, fromdate, todate):
-    infoPosts = []
-    status = True
-    page_index = 1
-    while status:
-        infoPostsPageCurrent, status = getInfoPostByList(url.format(
-            page = page_index,
-            fromdate = dateToTimestamp(fromdate),
-            todate = dateToTimestamp(todate)
-        ), date = None)
-=======
+def saveCategory(item):
+    category = Category.objects(idCategory=item['id'])
+    # print(category)
+    if len(category) == 0:
+        infoCategory = getInfoCategory(item['id'], item['text'])
+        # print(infoCategory)
+        category = Category(
+            idCategory = infoCategory['id'],
+            title = infoCategory['title'],
+            description = infoCategory['description']
+        )
+        print(category.idCategory)
+        category.save()
+    else:
+        print('have a db:', category[0])
+        category = category[0]
+    return category
 
->>>>>>> remove csv
-        infoPosts.extend(infoPostsPageCurrent)
-        print("Pages: [{page}] Number of post: {numOfPost}".format(
-            page=page_index,
-            numOfPost=len(infoPostsPageCurrent)
-<<<<<<< HEAD
-        ))
-        page_index = page_index + 1
-        status = len(infoPostsPageCurrent) != 0
+def saveCategory(item):
+    category = Category.objects(idCategory=item['id'])
+    # print(category)
+    if len(category) == 0:
+        infoCategory = getInfoCategory(item['id'], item['text'])
+        print(infoCategory)
+        category = Category(
+            idCategory = infoCategory['id'],
+            title = infoCategory['title'],
+            description = infoCategory['description']
+        )
+        print(category.idCategory)
+        category.save()
+    else:
+        category = category[0]
 
-    return infoPosts
+    return category
+    
+def saveTag(item):
+    tag = Tag.objects(idTag=item['id'])
+    
+    if len(tag) == 0:
+        tag = Tag(
+            idTag = item['id'],
+            name = item['name'],
+            url = item['url']
+        )
+        tag.save()
+    else:
+        tag = tag[0]
+    
+    return tag
 
-with open(pathSaveCSV, 'w', newline='') as file:
-      writer = csv.writer(file)
-      writer.writerow(['id', 'text'])
+def saveTopic(item):
+    topic = Topic.objects(idTopic=item['id'])
+    print(item)
+    if len(topic) == 0:
+        topic = Topic(
+            idTopic = item['id'],
+            articleTopic = item['articleTopic'],
+            title = item['title'],
+            description = item['description']
+        )
+        topic.save()
+    else:
+        topic = topic[0]
+    
+    return topic
 
-# listIdPost = getInfoPostByCategory(categoryThoiSu, '1/4/2020', '26/5/2020')
-listInfoPost = removeDuplicate(getInfoPostByPage(tagCovid, 5))
-print(listInfoPost)
-totalPost = len(listInfoPost)
-for index, post in enumerate(listInfoPost, start = 1):
-    print("Post[{index}/{total}]: [{post}]".format(
-        post = post['id'],
-        index = index,
-        total = totalPost
-    ))
-    comments = getComments(str(post['id']))
-    totalComment = len(comments)
-    for index, comment in enumerate(comments, start = 1):
-        print('[{index}/{totalComment}] - {comment}'.format(
-            comment = comment['comment'],
-            index = index,
-            totalComment = totalComment
-=======
->>>>>>> remove csv
-        ))
+def savePost(item):
+    post = Post.objects(idPost=item['id'])
+    if len(post) == 0:
+        post = Post(
+            idPost = item['id'],
+            title = item['title'],
+            description = item['description'],
+            timeStamp = item['publishTime'],
+            link = item['link'],
+            link_thumbnail = item['thumbnail']
+        )
 
-    # print(infoPosts)
-    return infoPosts
+        post.save()
+    else:
+        post = post[0]
 
+    return post
 
 def getInfoPostByCategory(category, fromdate, todate):
     infoPosts = []
     for item in category:
-        print(item)
+        # print(item)
         status = True
         page_index = 1
+        category = saveCategory(item)
+
         while status:
             url = 'https://vnexpress.net/category/day?cateid={cateid}&allcate={allcate}&fromdate={fromdate}&todate={todate}&page={page}'.format(
                         cateid = item['id'],
@@ -323,9 +376,25 @@ def getInfoPostByCategory(category, fromdate, todate):
                         fromdate = dateToTimestamp(fromdate),
                         todate = dateToTimestamp(todate)
                     )
-            print(url)
             infoPostsPageCurrent, status = getInfoPostByList(url, date = None)
+            for infoPost in infoPostsPageCurrent:
+                infoPost, infoTags, infoTopic = getInfoPost(infoPost['link'])
+                post  = savePost(infoPost)
+                
+                category.posts.append(post)
+
+                if len(infoTopic) != 0:
+                    topic  = saveTopic(infoTopic)
+                    topic.posts.append(post)
+                    topic.save()
+
+                for infoTag in infoTags:
+                    tag = saveTag(infoTag)
+                    tag.posts.append(post)
+                    tag.save()
+
             infoPosts.extend(infoPostsPageCurrent)
+
             print("Pages: [{page}] Number of post: {numOfPost}".format(
                 page=page_index,
                 numOfPost=len(infoPostsPageCurrent)
@@ -339,10 +408,6 @@ def getCategoryFromJson():
     with open('./category.json') as f:
         data = json.load(f)
         
-<<<<<<< HEAD
-    writeCSVFile(comments, total)
-    total = total + totalComment
-=======
     return data
 
 def firstThingWriteCsv():
@@ -405,4 +470,3 @@ if __name__ == '__main__':
     
     end = time.time()
     print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
->>>>>>> remove csv
