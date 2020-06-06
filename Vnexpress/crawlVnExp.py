@@ -26,7 +26,7 @@ def getInfoTopic(idTopic, articleTopic):
     content = requests.get(url)
     soup = BeautifulSoup(content.text, 'html.parser')
 
-    description = soup.find('meta', attrs={'name': 'description'})['content']
+    description = soup.find('meta', attrs={'name': 'description'})
     if description != None:
         description = description['content']
     else:
@@ -109,7 +109,7 @@ def getInfoPost(url, idPost):
     
     description = soup.find('meta', attrs={'name': 'description'})
     if description != None:
-        description = description['content']
+        description = description
     else:
         description = ''
 
