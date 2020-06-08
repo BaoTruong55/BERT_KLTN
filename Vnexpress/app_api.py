@@ -6,12 +6,14 @@ from flask import jsonify
 from infer_predict import *
 from post_crawl import *
 from model_vnexpress import *
+from flask_cors import CORS, cross_origin
 
 
 # TODO ==== Main ===============================================================
 
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 
 class Vnexpress(Resource):
