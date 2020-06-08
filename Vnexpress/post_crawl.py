@@ -21,9 +21,20 @@ def  getInfoPost(URL):
     content = requests.get(URL)
     soup = BeautifulSoup(content.text, 'html.parser')
     idPost = soup.find('meta', attrs={'name': 'its_id'}).get('content')
-    description = soup.find('meta', attrs={'name': 'description'}).get('content')
+    
+    description = soup.find('meta', attrs={'name': 'description'})
+    if description != None:
+        description = description['content']
+    else:
+        description = ''
+
+    thumbnailUrl = soup.find('meta', attrs={'itemprop': 'thumbnailUrl'})
+    if thumbnailUrl != None:
+        thumbnailUrl = thumbnailUrl['content']
+    else:
+        thumbnailUrl = ''
     title = soup.find('title').text 
-    return idPost, title, description
+    return idPost, title, description, thumbnailUrl
     
 # ! Get reply comment from a comment in a post
 def getChildrenComment(idPost, idParent):

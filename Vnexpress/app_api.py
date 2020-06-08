@@ -5,13 +5,11 @@ from json import dumps
 from flask import jsonify
 from infer_predict import *
 from post_crawl import *
+from model_vnexpress import *
 
 
 # TODO ==== Main ===============================================================
 
-# with open('crawlPostVnExp.csv', 'w', newline='') as file:
-#       writer = csv.writer(file)
-#       writer.writerow(['id', 'text'])
 
 app = Flask(__name__)
 api = Api(app)
@@ -19,7 +17,7 @@ api = Api(app)
 class Vnexpress(Resource):
     def get(self):
         url = request.args.get('url')
-        idPost, title, description =  getInfoPost(url)
+        idPost, title, description, thumbnailUrl =  getInfoPost(url)
         comments = getComments(idPost)
 
         if len(comments) == 0:
@@ -28,12 +26,13 @@ class Vnexpress(Resource):
         df = NomalizeData(comments)
         df_result = PredictData(df)
         df_output = DataFrame(df_result, columns= ['data_text', 'label'])
-        df_negatives = df_output[df_output['label_test'] == 0]
-        df_possitives = df_output[df_output['label_test'] == 1]
+        df_negatives = df_output[df_output['label'] == 0]
+        df_possitives = df_output[df_output['label'] == 1]
         
         output = {
             "title": title,
             "description": description,
+            "thumbnailUrl": thumbnailUrl,
             "pos": len(df_possitives.index),
             "neg": len(df_negatives.index),
             "commentPos": df_possitives.to_dict("records"),
@@ -46,3 +45,4 @@ api.add_resource(Vnexpress, '/vnexpress') # Route_1
 
 if __name__ == '__main__':
      app.run()
+    # print(Tag.objects(idTag='98284'))

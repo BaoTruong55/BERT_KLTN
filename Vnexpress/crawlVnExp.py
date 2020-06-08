@@ -391,7 +391,6 @@ def crawlAllNDays(N):
 def crawlAllThreeDays():
     crawlAllNDays(3)
 
-
 def crawlAllAWeek():
     crawlAllNDays(7)
 
@@ -410,11 +409,12 @@ def predictComment():
             comment.label = df_result[df_result['id'] == comment.idComment]['label']
             comment.save() 
     print('Done')
+
 if __name__ == '__main__':
     start = time.time()
    
     # crawlAllThreeDays()
-    crawlAllAWeek()
+    # crawlAllAMonth()
     predictComment()
 
     end = time.time()
