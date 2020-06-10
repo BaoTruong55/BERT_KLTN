@@ -1,9 +1,10 @@
 import React from 'react'
-import "../../assets/img/loading.gif"
+import gifLoading from "../../assets/img/loading.gif"
+import "./Loading.scss"
 export const Loading = () => {
     return (
-        <div className="d-flex justify-content-center align-items-center">
-            <img src={Loading} alt=""></img>
+        <div className="d-flex justify-content-center align-items-center Loading">
+            <img src={gifLoading} alt=""></img>
         </div>
     )
 }
