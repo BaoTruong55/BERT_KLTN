@@ -413,7 +413,7 @@ def predictComment():
 if __name__ == '__main__':
     start = time.time()
    
-    # crawlAllThreeDays()
+    crawlAllThreeDays()
     # crawlAllAMonth()
     predictComment()
 
