@@ -32,6 +32,22 @@ def classifyCommentByDate(posts):
         else:
             classifyPost[post.publishTime.strftime('%m/%d/%Y')] = [post]
     
+    listPost = list(
+        map(
+            lambda item: {
+                "title": item.title,
+                "url": item.url,
+                "thumbnailUrl": item.thumbnailUrl,
+                "description": item.description,
+                "count_comment": len(item.comments)
+            },
+            posts
+        )
+    )
+
+
+    listPost.sort(key=lambda item: item['count_comment'], reverse=True)
+
     classifyComment = {}
     for key, value in classifyPost.items():
         comments = sum(list(map(getCommentsInPost, value)), [])
@@ -44,17 +60,18 @@ def classifyCommentByDate(posts):
 
 
         classifyComment[key] = {
-            "pos": {
-                "count": len(comments_pos),
-                # "comments": comments_text_pos
-            },
-            "neg": {
-                "count": len(comments_neg),
-                # "comments": comments_text_neg
-            }
+            "pos": len(comments_pos),
+            "neg": len(comments_neg),
         }
+    
+    classifyCommentFormat = []
+    for key in classifyComment:
+        classifyCommentFormat.append({
+            "date": key,
+            "data": classifyComment[key]
+        })
 
-    return classifyComment
+    return classifyCommentFormat, listPost[:20]
 
 
 def tag(id, dateFrom, dateTo):
@@ -142,6 +159,7 @@ def top20Tag():
     tags_obj = []
     for tag in tags:
         tags_obj.append({
+            "idTag": tag.idTag,
             "name" : tag.name,
             "count_post": countPostInTag(tag.idTag, today, fromDate)
         })
@@ -184,16 +202,17 @@ class Covid(Resource):
     def get(self):
         dateTo   = request.args.get('dateto')
         dateFrom = request.args.get('datefrom')
-        sentiment_by_date = tag('1266196', dateFrom, dateTo)
+        sentiment_by_date, top_post = tag('1266196', dateFrom, dateTo)
         total_pos = 0
         total_neg = 0
-        for key, value in sentiment_by_date.items():
-            total_pos = total_pos + value['pos']['count']
-            total_neg = total_neg + value['neg']['count']
+        for item in sentiment_by_date:
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
 
         result = {
             "total_pos": total_pos,
             "total_neg": total_neg,
+            "top_post": top_post,
             "sentiment_by_date": sentiment_by_date
         }
 
@@ -211,12 +230,128 @@ class TopTag(Resource):
         tags = top20Tag()
         return Response(json.dumps(tags), mimetype='application/json')
 
+class Categories(Resource):
+    def get(seft):
+        category = Category.objects()
+        listCategory = list(
+            map(
+                lambda item: {
+                    "idCategory": item.idCategory,
+                    "title": item.title,
+                    "description": item.description
+                },
+                category
+            )
+        )
+        return Response(json.dumps(listCategory), mimetype='application/json')
 
+class CategorySentiment(Resource):
+    def get(seft):
+        idCategory  = request.args.get('idcategory')
+        dateTo   = request.args.get('dateto')
+        dateFrom = request.args.get('datefrom')
+        sentiment_by_date, top_post = category(idCategory, dateTo, dateFrom)
+        total_pos = 0
+        total_neg = 0
+        for item in sentiment_by_date:
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
+
+        result = {
+            "total_pos": total_pos,
+            "total_neg": total_neg,
+            "top_post": top_post,
+            "sentiment_by_date": sentiment_by_date
+        }
+        return Response(json.dumps(result), mimetype='application/json')
+
+class CategorySentiment(Resource):
+    def get(seft):
+        idCategory  = request.args.get('idcategory')
+        dateTo   = request.args.get('dateto')
+        dateFrom = request.args.get('datefrom')
+        sentiment_by_date, top_post = category(idCategory, dateTo, dateFrom)
+        total_pos = 0
+        total_neg = 0
+        for item in sentiment_by_date:
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
+
+        result = {
+            "total_pos": total_pos,
+            "total_neg": total_neg,
+            "top_post": top_post,
+            "sentiment_by_date": sentiment_by_date
+        }
+        return Response(json.dumps(result), mimetype='application/json')
+
+class TagSentiment(Resource):
+    def get(seft):
+        idTag  = request.args.get('idtag')
+
+        if request.args.get('dateto') != None:
+            dateTo   = request.args.get('dateto')
+        else:    
+            dateTo = formatDate(date.today())
+        
+
+        if request.args.get('datefrom') != None:
+            dateFrom   = request.args.get('datefrom')
+        else:    
+            dateFrom = formatDate(date.today() - timedelta(days=30))
+
+        sentiment_by_date, top_post = tag(idTag, dateTo, dateFrom)
+        total_pos = 0
+        total_neg = 0
+        for item in sentiment_by_date:
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
+
+        result = {
+            "total_pos": total_pos,
+            "total_neg": total_neg,
+            "top_post": top_post,
+            "sentiment_by_date": sentiment_by_date
+        }
+        return Response(json.dumps(result), mimetype='application/json')
+
+class TopicSentiment(Resource):
+    def get(seft):
+        idTopic  = request.args.get('idtopic')
+        if request.args.get('dateto') != None:
+            dateTo   = request.args.get('dateto')
+        else:    
+            dateTo = formatDate(date.today())
+        
+
+        if request.args.get('datefrom') != None:
+            dateFrom   = request.args.get('datefrom')
+        else:    
+            dateFrom = formatDate(date.today() - timedelta(days=30))
+        
+        sentiment_by_date, top_post = topic(idTopic, dateTo, dateFrom)
+        total_pos = 0
+        total_neg = 0
+        for item in sentiment_by_date:
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
+
+        result = {
+            "total_pos": total_pos,
+            "total_neg": total_neg,
+            "top_post": top_post,
+            "sentiment_by_date": sentiment_by_date
+        }
+        return Response(json.dumps(result), mimetype='application/json')
 
 api.add_resource(Vnexpress, '/vnexpress')
 api.add_resource(Covid, '/vnexpress/covid')
 api.add_resource(TopTopic, '/vnexpress/toptopic')
 api.add_resource(TopTag, '/vnexpress/toptag')
+api.add_resource(Categories, '/vnexpress/categories')
+api.add_resource(TopicSentiment,'/vnexpress/topicsentiment')
+api.add_resource(CategorySentiment,'/vnexpress/categorysentiment')
+api.add_resource(TagSentiment,'/vnexpress/tagsentiment')
 
 if __name__ == '__main__':
     app.run()
