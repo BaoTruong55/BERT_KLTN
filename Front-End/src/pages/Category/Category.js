@@ -22,6 +22,7 @@ import './Category.scss';
 import { DonutChart } from './components/DonutChart';
 import { LineChart } from './components/LineChart';
 import { Nodata } from '../Nodata/Nodata';
+import axios from 'axios';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -43,6 +44,8 @@ export const Category = () => {
   const [open, setOpen] = React.useState(false);
   const [convertRange, setConvertRange] = React.useState('');
   const [filter, setFilter] = React.useState(false);
+  const [isLoaded, setIsLoaded] = React.useState(false);
+  const [data, setData] = React.useState();
   const [rangePicker, setRangePicker] = React.useState([
     {
       startDate: new Date(),
@@ -50,9 +53,12 @@ export const Category = () => {
       key: 'selection',
     },
   ]);
+  const [rangeFormat, setRangeFormat] = React.useState({
+    startDate: '',
+    endDate: '',
+  });
 
   let moment = require('moment');
-
   const handleChange = (event) => {
     setCategory(event.target.value);
   };
@@ -72,18 +78,43 @@ export const Category = () => {
     return moment
       .utc(time, 'ddd MMM DD YYYY HH:mm:ss ZZ')
       .add(1, 'days')
-      .format('DD/MM/YYYY');
+      .format('MM/DD/YYYY');
   }
 
   function handleSelect(item) {
     setRangePicker([item.selection]);
     let start = convertTime(item.selection.startDate);
     let end = convertTime(item.selection.endDate);
+    setRangeFormat({
+      startDate: start,
+      endDate: end,
+    });
     setConvertRange(start + ' - ' + end);
   }
 
+  // http://127.0.0.1:5000/vnexpress/covid?dateto=06/01/2020&datefrom=06/07/2020
+
   const handleFilter = () => {
+    console.log(rangeFormat);
+    setIsLoaded(true);
     setFilter(true);
+    axios
+      .get(
+        'http://127.0.0.1:5000/vnexpress/covid?datefrom=' +
+          rangeFormat.startDate +
+          '&dateto=' +
+          rangeFormat.endDate
+      )
+      .then((res) => {
+        setData(res.data);
+        console.log(res.data);
+        setIsLoaded(false);
+      })
+      .catch((err) => {
+        setIsLoaded(false);
+        alert('Oops, Something went wrong! Please try again.');
+        console.log(err);
+      });
   };
 
   return (
@@ -140,6 +171,8 @@ export const Category = () => {
               moveRangeOnFirstSelection={false}
               ranges={rangePicker}
               maxDate={addDays(new Date(), 0)}
+              minDate={addDays(new Date(), -30)}
+              dragSelectionEnabled={false}
             />
             <DialogActions>
               <Button onClick={handleClose} color="primary">
