@@ -91,9 +91,7 @@ export const Category = () => {
     });
     setConvertRange(start + ' - ' + end);
   }
-
-  // http://127.0.0.1:5000/vnexpress/covid?dateto=06/01/2020&datefrom=06/07/2020
-
+  
   const handleFilter = () => {
     console.log(rangeFormat);
     setIsLoaded(true);
