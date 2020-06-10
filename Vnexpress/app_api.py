@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-from infer_predict import *
+# from infer_predict import *
 from post_crawl import *
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin
@@ -57,44 +57,44 @@ def classifyCommentByDate(posts):
     return classifyComment
 
 
-def tag(id, dateTo, dateFrom):
+def tag(id, dateFrom, dateTo):
     postsInTag = Tag.objects.get(idTag=id).posts
     
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateTo),
-        publishTime__lte=parser.parse(dateFrom),
+        publishTime__gte=parser.parse(dateFrom),
+        publishTime__lte=parser.parse(dateTo),
         idPost__in = list(map(getIdPost, postsInTag))
     )
 
     return classifyCommentByDate(posts)
 
-def category(id, dateTo, dateFrom):
+def category(id, dateFrom, dateTo):
     postsInCategory = Category.objects.get(idCategory=id).posts
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateTo),
-        publishTime__lte=parser.parse(dateFrom),
+        publishTime__gte=parser.parse(dateFrom),
+        publishTime__lte=parser.parse(dateTo),
         idPost__in = list(map(getIdPost, postsInCategory))
     )
     
     return classifyCommentByDate(posts)
 
-def topic(id, dateTo, dateFrom):
+def topic(id, dateFrom, dateTo):
     postsInTopic = Topic.objects.get(idTopic=id).posts
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateTo),
-        publishTime__lte=parser.parse(dateFrom),
+        publishTime__gte=parser.parse(dateFrom),
+        publishTime__lte=parser.parse(dateTo),
         idPost__in = list(map(getIdPost, postsInTopic))
     )
 
     return classifyCommentByDate(posts)
 
-def countPostInTopic(id, dateTo, dateFrom):
+def countPostInTopic(id, dateFrom, dateTo):
     postsInTopic = Topic.objects.get(idTopic=id).posts
 
-    if len(postsInTag) > 1:
+    if len(postsInTopic) > 1:
         posts = Post.objects(
-            publishTime__gte=parser.parse(dateTo),
-            publishTime__lte=parser.parse(dateFrom),
+            publishTime__gte=parser.parse(dateFrom),
+            publishTime__lte=parser.parse(dateTo),
             idPost__in = list(map(getIdPost, postsInTopic))
         )
     else:
@@ -110,22 +110,23 @@ def top20Topic():
     topics_obj = []
     for topic in topics:
         topics_obj.append({
-            # "title" : topic.title,
-            # "description": topic.description,
+            "idTopic": topic.idTopic, 
+            "title" : topic.title,
+            "description": topic.description,
             "count_post": countPostInTopic(topic.idTopic, today, fromDate)
         })
     topics_obj = list(filter(lambda item: item["count_post"] > 0, topics_obj))
     topics_obj.sort(key=lambda item: item["count_post"], reverse=True)
-    
+    print('Done')
     return topics_obj
 
-def countPostInTag(idTag, dateTo, dateFrom):
+def countPostInTag(idTag, dateFrom, dateTo):
     postsInTag = Tag.objects().get(idTag=idTag).posts
 
     if len(postsInTag) > 1:
         posts = Post.objects(
-            # publishTime__gte=parser.parse(dateTo),
-            # publishTime__lte=parser.parse(dateFrom),
+            publishTime__gte=parser.parse(dateFrom),
+            publishTime__lte=parser.parse(dateTo),
             idPost__in=list(map(getIdPost, postsInTag))
         )
     else:
@@ -183,7 +184,7 @@ class Covid(Resource):
     def get(self):
         dateTo   = request.args.get('dateto')
         dateFrom = request.args.get('datefrom')
-        sentiment_by_date = tag('1266196', dateTo, dateFrom)
+        sentiment_by_date = tag('1266196', dateFrom, dateTo)
         total_pos = 0
         total_neg = 0
         for key, value in sentiment_by_date.items():
@@ -198,8 +199,24 @@ class Covid(Resource):
 
         return Response(json.dumps(result), mimetype='application/json')
 
+class TopTopic(Resource):
+    def get(self):
+        topics = top20Topic()
+
+        return Response(json.dumps(topics), mimetype='application/json')
+
+
+class TopTag(Resource):
+    def get(self):
+        tags = top20Tag()
+        return Response(json.dumps(tags), mimetype='application/json')
+
+
+
 api.add_resource(Vnexpress, '/vnexpress')
 api.add_resource(Covid, '/vnexpress/covid')
+api.add_resource(TopTopic, '/vnexpress/toptopic')
+api.add_resource(TopTag, '/vnexpress/toptag')
 
 if __name__ == '__main__':
     app.run()
