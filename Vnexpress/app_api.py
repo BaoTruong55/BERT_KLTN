@@ -87,19 +87,20 @@ def tag(id, dateFrom, dateTo):
 
 def category(id, dateFrom, dateTo):
     postsInCategory = Category.objects.get(idCategory=id).posts
+
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateFrom),
-        publishTime__lte=parser.parse(dateTo),
+        publishTime__gte=parser.parse(dateTo),
+        publishTime__lte=parser.parse(dateFrom),
         idPost__in = list(map(getIdPost, postsInCategory))
     )
-    
+
     return classifyCommentByDate(posts)
 
 def topic(id, dateFrom, dateTo):
     postsInTopic = Topic.objects.get(idTopic=id).posts
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateFrom),
-        publishTime__lte=parser.parse(dateTo),
+        publishTime__gte=parser.parse(dateTo),
+        publishTime__lte=parser.parse(dateFrom),
         idPost__in = list(map(getIdPost, postsInTopic))
     )
 
