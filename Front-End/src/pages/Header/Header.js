@@ -4,6 +4,7 @@ import Homepage from '../Homepage/Homepage';
 import { Category } from '../Category/Category';
 import { World } from '../World/World';
 import { Post } from '../Post/Post';
+import { Topic } from '../Topic/Topic';
 import './Header.scss';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { useLocation } from 'react-router';
@@ -20,11 +21,14 @@ export default function NavTabs() {
         case '/world':
           setValue(1);
           break;
-        case '/category':
+        case '/ros':
           setValue(2);
           break;
         case '/post':
           setValue(3);
+          break;
+        case '/topic':
+          setValue(4);
           break;
         default:
           break;
@@ -48,15 +52,17 @@ export default function NavTabs() {
           >
             <Tab label="Home" component={Link} to="/" />
             <Tab label="World" component={Link} to="/world" />
-            <Tab label="Category" component={Link} to="/category" />
+            <Tab label="RoS" component={Link} to="/ros" />
             <Tab label="Post" component={Link} to="/post" />
+            <Tab label="Topic" component={Link} to="/topic" />
           </Tabs>
         </AppBar>
         <div className="component">
           <Route exact path="/" component={Homepage} />
           <Route path="/world" component={World} />
-          <Route path="/category" component={Category} />
+          <Route path="/ros" component={Category} />
           <Route path="/post" component={Post} />
+          <Route path="/topic" component={Topic} />
         </div>
       </div>
     </Router>
