@@ -87,19 +87,20 @@ def tag(id, dateFrom, dateTo):
 
 def category(id, dateFrom, dateTo):
     postsInCategory = Category.objects.get(idCategory=id).posts
+
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateFrom),
-        publishTime__lte=parser.parse(dateTo),
+        publishTime__gte=parser.parse(dateTo),
+        publishTime__lte=parser.parse(dateFrom),
         idPost__in = list(map(getIdPost, postsInCategory))
     )
-    
+
     return classifyCommentByDate(posts)
 
 def topic(id, dateFrom, dateTo):
     postsInTopic = Topic.objects.get(idTopic=id).posts
     posts = Post.objects(
-        publishTime__gte=parser.parse(dateFrom),
-        publishTime__lte=parser.parse(dateTo),
+        publishTime__gte=parser.parse(dateTo),
+        publishTime__lte=parser.parse(dateFrom),
         idPost__in = list(map(getIdPost, postsInTopic))
     )
 
@@ -130,11 +131,11 @@ def top20Topic():
             "idTopic": topic.idTopic, 
             "title" : topic.title,
             "description": topic.description,
-            "count_post": countPostInTopic(topic.idTopic, today, fromDate)
+            "count_post": countPostInTopic(topic.idTopic, fromDate, today)
         })
     topics_obj = list(filter(lambda item: item["count_post"] > 0, topics_obj))
     topics_obj.sort(key=lambda item: item["count_post"], reverse=True)
-    print('Done')
+
     return topics_obj
 
 def countPostInTag(idTag, dateFrom, dateTo):
@@ -161,7 +162,7 @@ def top20Tag():
         tags_obj.append({
             "idTag": tag.idTag,
             "name" : tag.name,
-            "count_post": countPostInTag(tag.idTag, today, fromDate)
+            "count_post": countPostInTag(tag.idTag, fromDate, today)
         })
     tags_obj = list(filter(lambda item: item["count_post"] > 0, tags_obj))
     
@@ -221,7 +222,7 @@ class Covid(Resource):
 class TopTopic(Resource):
     def get(self):
         topics = top20Topic()
-
+        
         return Response(json.dumps(topics), mimetype='application/json')
 
 
@@ -250,7 +251,7 @@ class CategorySentiment(Resource):
         idCategory  = request.args.get('idcategory')
         dateTo   = request.args.get('dateto')
         dateFrom = request.args.get('datefrom')
-        sentiment_by_date, top_post = category(idCategory, dateTo, dateFrom)
+        sentiment_by_date, top_post = category(idCategory, dateFrom, dateTo)
         total_pos = 0
         total_neg = 0
         for item in sentiment_by_date:
@@ -270,7 +271,7 @@ class CategorySentiment(Resource):
         idCategory  = request.args.get('idcategory')
         dateTo   = request.args.get('dateto')
         dateFrom = request.args.get('datefrom')
-        sentiment_by_date, top_post = category(idCategory, dateTo, dateFrom)
+        sentiment_by_date, top_post = category(idCategory, dateFrom, dateTo)
         total_pos = 0
         total_neg = 0
         for item in sentiment_by_date:
@@ -300,7 +301,7 @@ class TagSentiment(Resource):
         else:    
             dateFrom = formatDate(date.today() - timedelta(days=30))
 
-        sentiment_by_date, top_post = tag(idTag, dateTo, dateFrom)
+        sentiment_by_date, top_post = tag(idTag, dateFrom, dateTo)
         total_pos = 0
         total_neg = 0
         for item in sentiment_by_date:
@@ -329,7 +330,7 @@ class TopicSentiment(Resource):
         else:    
             dateFrom = formatDate(date.today() - timedelta(days=30))
         
-        sentiment_by_date, top_post = topic(idTopic, dateTo, dateFrom)
+        sentiment_by_date, top_post = topic(idTopic, dateFrom, dateTo)
         total_pos = 0
         total_neg = 0
         for item in sentiment_by_date:
