@@ -8,6 +8,7 @@ import { useTheme } from '@material-ui/core/styles';
 import { Nodata } from '../Nodata/Nodata';
 import axios from 'axios';
 import { Loading } from '../../shared/Loading/Loading';
+import { PostDetail } from '../../shared/PostDetail/PostDetail';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -80,10 +81,11 @@ export function Post() {
         .catch((err) => {
           setIsLoaded(false);
           setSearch(false);
-          alert("Oops, Something went wrong! Please try again.")
+          alert('Oops, Something went wrong! Please try again.');
           console.log(err);
         });
     } else {
+      setIsLoaded(false);
       setSearch(false);
     }
   };
@@ -113,7 +115,7 @@ export function Post() {
         {search ? (
           <div className="row mt-5">
             <div className="col-md-6 col-sm-12">
-              <div className="row m-0">
+              {/* <div className="row m-0">
                 <div className="col-md-8">
                   <a
                     href={link}
@@ -132,7 +134,13 @@ export function Post() {
                     alt=""
                   />
                 </div>
-              </div>
+              </div> */}
+              <PostDetail
+                link={link}
+                title={data.title}
+                description={data.description}
+                thumbnailUrl={data.thumbnailUrl}
+              />
               <AppBar className="mt-5" position="static" color="default">
                 <Tabs
                   value={value}

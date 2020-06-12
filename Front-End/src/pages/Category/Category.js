@@ -2,9 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   InputLabel,
-  // MenuItem,
   FormControl,
-  // Select,
   Button,
   Dialog,
   DialogActions,
@@ -24,6 +22,7 @@ import { LineChart } from './components/LineChart';
 import { Nodata } from '../Nodata/Nodata';
 import axios from 'axios';
 import { Loading } from '../../shared/Loading/Loading';
+import { PostDetail } from '../../shared/PostDetail/PostDetail';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -41,7 +40,6 @@ const useStyles = makeStyles((theme) => ({
 
 export const Category = () => {
   const classes = useStyles();
-  // const [category, setCategory] = React.useState(0);
   const [open, setOpen] = React.useState(false);
   const [convertRange, setConvertRange] = React.useState('');
   const [filter, setFilter] = React.useState(false);
@@ -53,6 +51,7 @@ export const Category = () => {
       dataNeg: [],
       totalPos: 0,
       totalNeg: 0,
+      top_pos: [],
     },
   });
   const [rangePicker, setRangePicker] = React.useState([
@@ -68,9 +67,6 @@ export const Category = () => {
   });
 
   let moment = require('moment');
-  // const handleChange = (event) => {
-  //   setCategory(event.target.value);
-  // };
 
   const handleDialog = () => {
     setOpen(!open);
@@ -113,12 +109,22 @@ export const Category = () => {
         let labels = [];
         let dataPos = [];
         let dataNeg = [];
-        if (res && res.data && res.data.sentiment_by_date) {
-          for (let i = 0; i < res.data.sentiment_by_date.length; i++) {
-            labels.push(res.data.sentiment_by_date[i].date);
-            dataPos.push(res.data.sentiment_by_date[i].data.pos);
-            dataNeg.push(res.data.sentiment_by_date[i].data.neg);
+        let top_post = [];
+        if (res && res.data) {
+          if (res.data.sentiment_by_date) {
+            for (let i = 0; i < res.data.sentiment_by_date.length; i++) {
+              labels.push(res.data.sentiment_by_date[i].date);
+              dataPos.push(res.data.sentiment_by_date[i].data.pos);
+              dataNeg.push(res.data.sentiment_by_date[i].data.neg);
+            }
           }
+
+          if (res.data.top_post) {
+            for (let i = 0; i < res.data.top_post.length; i++) {
+              top_post.push(res.data.top_post[i]);
+            }
+          }
+
           setData({
             ...data,
             data: {
@@ -127,6 +133,7 @@ export const Category = () => {
               dataNeg: dataNeg,
               totalPos: res.data.total_pos,
               totalNeg: res.data.total_neg,
+              top_post: top_post,
             },
           });
           setFilter(true);
@@ -154,19 +161,6 @@ export const Category = () => {
         <h1 className="h1 title">Reaction of society</h1>
         <div className="row">
           <div className="col-12 d-flex align-items-center">
-            {/* <FormControl className={classes.formControl}>
-              <InputLabel>Categories</InputLabel>
-              <Select value={category} onChange={handleChange}>
-                <MenuItem value={0}>Thế giới</MenuItem>
-                <MenuItem value={1}>Sức khỏe</MenuItem>
-                <MenuItem value={2}>Kinh doanh</MenuItem>
-                <MenuItem value={3}>Thể thao</MenuItem>
-                <MenuItem value={4}>Du lịch</MenuItem>
-                <MenuItem value={5}>Giải trí</MenuItem>
-                <MenuItem value={6}>Cộng đồng</MenuItem>
-              </Select>
-            </FormControl> */}
-
             <FormControl className={classes.formControl}>
               <InputLabel className="" htmlFor="standard-adornment-password">
                 Time
@@ -225,28 +219,50 @@ export const Category = () => {
         </div>
         {/* ------------------------------------------------------------------------------------------------ */}
         {filter ? (
-          <div className="row mt-5">
-            <div className="col-md-6 col-sm 12">
-              <div className="card">
-                <h4 className="card-header">Pos and Neg</h4>
-                <div className="card-body">
-                  {console.log(data.data.totalPos)}
-                  <DonutChart data={[data.data.totalPos, data.data.totalNeg]} />
+          <div className="mt-5">
+            <div className="row">
+              <div className="col-md-6 col-sm 12">
+                <div className="card">
+                  <h4 className="card-header">Pos and Neg</h4>
+                  <div className="card-body">
+                    {console.log(data.data.totalPos)}
+                    <DonutChart
+                      data={[data.data.totalPos, data.data.totalNeg]}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="col-md-6 col-sm 12">
+                <div className="card">
+                  <h4 className="card-header">Reaction of society</h4>
+                  <div className="card-body">
+                    <LineChart
+                      dataPos={data.data.dataPos}
+                      dataNeg={data.data.dataNeg}
+                      labels={data.data.labels}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-sm 12">
-              <div className="card">
-                <h4 className="card-header">Reaction of society</h4>
-                <div className="card-body">
-                  <LineChart
-                    dataPos={data.data.dataPos}
-                    dataNeg={data.data.dataNeg}
-                    labels={data.data.labels}
+            <div className="mt-5">
+              <h2>Top post:</h2>
+            </div>
+            <div className="d-flex flex-column align-items-center">
+              <div className="top-post">
+              {data.data.top_post.map((e, index) => {
+                return (
+                  <PostDetail
+                    link={e.url}
+                    title={e.title}
+                    description={e.description}
+                    thumbnailUrl={e.thumbnailUrl}
                   />
-                </div>
-              </div>
+                );
+              })}
             </div>
+            </div>
+            
           </div>
         ) : (
           <Nodata />
