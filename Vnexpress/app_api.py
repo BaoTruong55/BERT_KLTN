@@ -78,8 +78,8 @@ def classify_comment_by_date(posts):
 
         comments_neg = list(filter(IS_LABEL_NEG, comments))
         comments_pos = list(filter(IS_LABEL_POS, comments))
-        comments_text_neg = list(map(GET_COMMENT, comments_neg))
-        comments_text_pos = list(map(GET_COMMENT, comments_pos))
+        # comments_text_neg = list(map(GET_COMMENT, comments_neg))
+        # comments_text_pos = list(map(GET_COMMENT, comments_pos))
 
         classifyComment[key] = {
             "pos": len(comments_pos),
@@ -128,7 +128,7 @@ class Vnexpress(Resource):
     def get(self):
         url = request.args.get('url')
         id_post, title, description, thumbnail_url = get_info_post(url)
-        comments = get_comments(id_ost)
+        comments = get_comments(id_post)
 
         if len(comments) == 0:
             return {"Error": "The article has no comments"}
@@ -187,8 +187,8 @@ class TopTopics(Resource):
                 "title": item.title,
                 "description": item.description,
                 "count_posts": len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)),
-                "neg": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)))['comments_neg']),
-                "pos": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)))['comments_pos'])
+                # "neg": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)))['comments_neg']),
+                # "pos": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)))['comments_pos'])
             }, top_topic.topics
         ))
         return Response(json.dumps(topics), mimetype='application/json')
@@ -208,15 +208,15 @@ class TopTags(Resource):
                 "title": item.name,
                 "url": item.url,
                 "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
-                "neg": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)))['comments_neg']),
-                "pos": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)))['comments_pos'])
-            }, top_tag.topics
+                # "neg": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)))['comments_neg']),
+                # "pos": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)))['comments_pos'])
+            }, top_tag.tags
         ))
         return Response(json.dumps(tags), mimetype='application/json')
 
 
 class Categories(Resource):
-    def get(seft):
+    def get(self):
         category = Category.objects()
         listCategory = list(map(
             lambda item: {
@@ -230,7 +230,7 @@ class Categories(Resource):
 
 
 class CategorySentiment(Resource):
-    def get(seft):
+    def get(self):
         idCategory = request.args.get('idcategory')
         date_to = request.args.get('dateto')
         date_from = request.args.get('datefrom')
@@ -251,7 +251,7 @@ class CategorySentiment(Resource):
 
 
 class TagSentiment(Resource):
-    def get(seft):
+    def get(self):
         id_tag = request.args.get('idtag')
 
         if request.args.get('dateto') != None:
@@ -281,7 +281,7 @@ class TagSentiment(Resource):
 
 
 class TopicSentiment(Resource):
-    def get(seft):
+    def get(self):
         id_topic = request.args.get('idtopic')
 
         if request.args.get('dateto') != None:
