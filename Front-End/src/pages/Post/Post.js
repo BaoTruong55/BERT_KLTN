@@ -115,7 +115,7 @@ export function Post() {
         {search ? (
           <div className="row mt-5">
             <div className="col-md-6 col-sm-12">
-              {/* <div className="row m-0">
+              <div className="row m-0">
                 <div className="col-md-8">
                   <a
                     href={link}
@@ -134,13 +134,13 @@ export function Post() {
                     alt=""
                   />
                 </div>
-              </div> */}
-              <PostDetail
+              </div>
+              {/* <PostDetail
                 link={link}
                 title={data.title}
                 description={data.description}
                 thumbnailUrl={data.thumbnailUrl}
-              />
+              /> */}
               <AppBar className="mt-5" position="static" color="default">
                 <Tabs
                   value={value}
