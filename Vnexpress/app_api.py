@@ -19,7 +19,7 @@ api = Api(app)
 
 def IS_LABEL_NEG(item): return item.label == 0
 def IS_LABEL_POS(item): return item.label == 1
-def GET_COMMENT(item): return item.comment
+def GET_COMMENT(item): return item.comments
 def GET_USER_LIKE(item): return item.userLike
 def GET_COMMENTS_IN_POST(item): return item.comments
 def GET_ID_POST(item): return item.idPost
@@ -29,17 +29,20 @@ def format_date(date):
     return str(f'{date:%m/%d/%Y}')
 
 
-def filter_posts_by_date(postsSource, dateFrom, dateTo):
+def filter_posts_by_date(postsSource, date_from, date_to):
     posts = list(filter(
         lambda item:
-            item.publishTime <= parser.parse(dateTo) and
-            item.publishTime >= parser.parse(dateFrom), postsSource
+            item.publishTime <= parser.parse(
+                format_date(date_to))
+            and
+            item.publishTime >= parser.parse(
+                format_date(date_from)), postsSource
     ))
     return posts
 
 
 def sentiment_in_posts(posts):
-    comments = sum(list(map(GET_COMMENT, posts)))
+    comments = sum(list(map(GET_COMMENT, posts)), [])
     comments_pos = list(filter(IS_LABEL_POS, comments))
     comments_neg = list(filter(IS_LABEL_NEG, comments))
 
@@ -50,14 +53,14 @@ def sentiment_in_posts(posts):
 
 
 def classify_comment_by_date(posts):
-    classifyPost = {}
+    classify_post = {}
     for post in posts:
         if post.publishTime.strftime('%m/%d/%Y') in classifyPost:
-            classifyPost[post.publishTime.strftime('%m/%d/%Y')].append(post)
+            classify_post[post.publishTime.strftime('%m/%d/%Y')].append(post)
         else:
-            classifyPost[post.publishTime.strftime('%m/%d/%Y')] = [post]
+            classify_post[post.publishTime.strftime('%m/%d/%Y')] = [post]
 
-    listPost = list(
+    list_post = list(
         map(
             lambda item: {
                 "title": item.title,
@@ -70,9 +73,9 @@ def classify_comment_by_date(posts):
         )
     )
 
-    listPost.sort(key=lambda item: item['count_comment'], reverse=True)
+    list_post.sort(key=lambda item: item['count_comment'], reverse=True)
 
-    classifyComment = {}
+    classify_comment = {}
     for key, value in classifyPost.items():
         comments = sum(list(map(GET_COMMENTS_IN_POST, value)), [])
 
@@ -81,19 +84,19 @@ def classify_comment_by_date(posts):
         # comments_text_neg = list(map(GET_COMMENT, comments_neg))
         # comments_text_pos = list(map(GET_COMMENT, comments_pos))
 
-        classifyComment[key] = {
+        classify_comment[key] = {
             "pos": len(comments_pos),
             "neg": len(comments_neg),
         }
 
-    classifyCommentFormat = []
-    for key in classifyComment:
-        classifyCommentFormat.append({
+    classify_comment_format = []
+    for key in classify_comment:
+        classify_comment_format.append({
             "date": key,
-            "data": classifyComment[key]
+            "data": classify_comment[key]
         })
 
-    return classifyCommentFormat, listPost[:20]
+    return classify_comment_format, list_post[:20]
 
 
 def tag(id, date_from, date_to):
@@ -179,7 +182,6 @@ class TopTopics(Resource):
         top_topic = TopTopic.objects(
             unitTime='month'
         ).order_by('-created').first()
-        print(len(top_topic.topics))
 
         topics = list(map(
             lambda item: {
@@ -187,8 +189,8 @@ class TopTopics(Resource):
                 "title": item.title,
                 "description": item.description,
                 "count_posts": len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)),
-                # "neg": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)))['comments_neg']),
-                # "pos": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)))['comments_pos'])
+                "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_neg']),
+                "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_pos'])
             }, top_topic.topics
         ))
         return Response(json.dumps(topics), mimetype='application/json')
@@ -199,17 +201,14 @@ class TopTags(Resource):
         top_tag = TopTag.objects(
             unitTime='month'
         ).order_by('-created').first()
-        print("=="*30)
-        print(top_tag.dateFrom)
-        print("=="*30)
         tags = list(map(
             lambda item: {
                 "id": item.idTag,
                 "title": item.name,
                 "url": item.url,
                 "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
-                # "neg": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)))['comments_neg']),
-                # "pos": len(sentiment_in_posts(len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)))['comments_pos'])
+                "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
+                "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_pos'])
             }, top_tag.tags
         ))
         return Response(json.dumps(tags), mimetype='application/json')
