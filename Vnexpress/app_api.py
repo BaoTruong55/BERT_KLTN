@@ -67,7 +67,7 @@ def classify_comment_by_date(posts):
         map(
             lambda item: {
                 "title": item.title,
-                "url": item.url,
+                "url": item.url.split('#')[0],
                 "thumbnailUrl": item.thumbnailUrl,
                 "description": item.description,
                 "count_comment": len(item.comments)
