@@ -1,5 +1,6 @@
-VnCoreNLP
-PhoBERT
-Models
+VnCoreNLP/
+PhoBERT/
+Models/
 Vnexpress/Utils/__pycache__
 __pycache__
+**/**.csv

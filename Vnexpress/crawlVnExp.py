@@ -1,280 +1,571 @@
-import urllib.request, json 
+import urllib.request
+import json
 from collections import namedtuple
 import csv
-from bs4 import BeautifulSoup # BeautifulSoup is in bs4 package 
+from bs4 import BeautifulSoup  # BeautifulSoup is in bs4 package
 import requests
 import dateutil.parser
 from model_vnexpress import *
 import re
 import unidecode
+from datetime import date, timedelta
+import time
+from utils import *
+from dateutil import parser
+from infer_predict import *
+from dateutil import parser
 
-index = 0
-PREFIX_ID = 'test_'
-total = 1
-pathSaveCSV = 'crawlVnExp-temp-da.csv'
+PATH_SAVE_CSV = 'crawlVnExp-temp-da.csv'
 
-categoryThoiSu = "https://vnexpress.net/category/day?cateid=1001005&fromdate={fromdate}&todate={todate}&allcate=1001005&page={page}"
 
-tagCovid = "https://vnexpress.net/tag/covid-19-1266216-p{page}"
+def get_info_topic(id_topic, article_topic):
+    topic = Topic.objects(idTopic=id_topic)
+    if len(topic) != 0:
+        return topic[0]
 
-def getJsonFromURL(url):
-    content = requests.get(url)
-    dataJson = content.json()
-
-    return dataJson
-
-def dateToTimestamp(date):
-    return dateutil.parser.parse(date, dayfirst=True).timestamp()
-
-def unmarkTiengViet(str):
-    return unidecode.unidecode(str)
-
-def removeDuplicate(listInfoPost):
-    idsPost = []
-    infoPosts = []
-    for infoPostCurrent in listInfoPost:
-        if infoPostCurrent['id'] not in idsPost:
-            infoPosts.append(infoPostCurrent)
-            idsPost.append(infoPostCurrent['id'])    
-    
-    return infoPosts
-
-# getInfo
-def getInfoTopic(topicId, articleTopic):
     url = 'https://vnexpress.net/topic/{articleTopic}-{topicId}'.format(
-        articleTopic = articleTopic,
-        topicId = articleTopic
+        articleTopic=article_topic,
+        topicId=id_topic
     )
     content = requests.get(url)
     soup = BeautifulSoup(content.text, 'html.parser')
 
-    description = soup.find('meta', attrs={'name': 'description'})['content']
+    description = soup.find('meta', attrs={'name': 'description'})
+    if description != None:
+        description = description['content']
+    else:
+        description = ''
+
     title = soup.find('title').text
 
-    return {
-        'topicId': topicId,
-        'articleTopic': articleTopic, 
-        'title': title,
-        'description': description
-    }
-    
-def getInfoTag(listTag):
-    url = "https://gw.vnexpress.net/tg/tag_detail?tag_id={listTag}&data_select=tag_id,tag_name,tag_url,tax_variations".format(listTag = ','.join(listTag))
-    dataTag = getJsonFromURL(url)
+    topic = Topic(
+        idTopic=id_topic,
+        articleTopic=article_topic,
+        title=title,
+        description=description
+    )
+
+    topic.save()
+
+    return topic
+
+
+def get_info_tag(list_tag):
+    url = "https://gw.vnexpress.net/tg/tag_detail?tag_id={listTag}&data_select=tag_id,tag_name,tag_url,tax_variations".format(
+        listTag=','.join(list_tag))
+    data_tag = get_json_from_url(url)
     tags = []
-    for key, value in dataTag['data'].items():
-        tags.append({
-            "id": value['tag_id'],
-            "name": value['tag_name'],
-            "url": value['tag_url']
-        })
+    for _, item in data_tag['data'].items():
+        tag = Tag.objects(idTag=str(item['tag_id']))
+
+        if len(tag) == 0:
+            tag = Tag(
+                idTag=str(item['tag_id']),
+                name=item['tag_name'],
+                url=item['tag_url']
+            )
+            tag.save()
+        else:
+            tag = tag[0]
+
+        tags.append(tag)
 
     return tags
 
-def getInfoPost(url):
+
+def get_info_post(url, id_post):
+    post = Post.objects(idPost=id_post)
+    if len(post) != 0:
+        return post[0], None, None
+
     content = requests.get(url)
     soup = BeautifulSoup(content.text, 'html.parser')
-    
+
     # script have info topicid, article topic, tag id
     script = soup.find_all('script')[3]
 
-    topicId = re.findall("{'article_topic_ID':'(.*?)'}", script.text)
-    if len(topicId) != 0:
-        topicId = topicId[0]
+    topic_id = re.findall("{'article_topic_ID':'(.*?)'}", script.text)
+    if len(topic_id) != 0:
+        topic_id = topic_id[0]
     else:
-        topicId = ''
+        topic_id = ''
 
-    articleTopic = re.findall("{'article_topic':'(.*?)'}", script.text)
-    if len(articleTopic) != 0:
-        articleTopic = '-'.join(unmarkTiengViet(articleTopic[0].lower()).split(' '))
+    article_topic = re.findall("{'article_topic':'(.*?)'}", script.text)
+    if len(article_topic) != 0:
+        article_topic = '-'.join(unmark_vietnamese(
+            article_topic[0].lower()).split(' '))
     else:
-        articleTopic = ''
+        article_topic = ''
 
-    listTag = re.findall("{'tag_id':'(.*?)'}", script.text)
-    if len(listTag) != 0:
-        listTag = listTag[0].split(', ')
+    tag_ids = re.findall("{'tag_id':'(.*?)'}", script.text)
+    if len(tag_ids) != 0:
+        tag_ids = tag_ids[0].split(', ')
     else:
-        listTag = []    
-    getInfoTag(listTag)
+        tag_ids = []
 
-    description = soup.find('meta', attrs={'name': 'description'})['content']
-    idPost = soup.find('meta', attrs={'name': 'its_id'})['content']
+    info_tags = None
+    if len(tag_ids) != 0:
+        info_tags = get_info_tag(tag_ids)
+
+    info_topic = None
+    if topic_id != '':
+        info_topic = get_info_topic(topic_id, article_topic)
+
     title = soup.find('title').text
 
-    return {
-    
-    }
+    description = soup.find('meta', attrs={'name': 'description'})
+    if description != None:
+        description = description['content']
+    else:
+        description = ''
 
-# getInfoPost('https://vnexpress.net/cong-to-vien-co-lan-can-khi-xem-ho-so-vu-luong-huu-phuoc-4109080.html')
-# getInfoPost('https://vnexpress.net/linh-trung-an-dang-chien-tich-au-da-len-mang-4108937.html')
+    publish_time = soup.find('meta', attrs={'name': 'its_publication'})
+    if publish_time != None:
+        publish_time = publish_time['content']
+    else:
+        publish_time = '0'
+
+    thumbnail_url = soup.find('meta', attrs={'itemprop': 'thumbnailUrl'})
+    if thumbnail_url != None:
+        thumbnail_url = thumbnail_url['content']
+    else:
+        thumbnail_url = ''
+
+    post = Post(
+        idPost=id_post,
+        title=title,
+        description=description,
+        publishTime=timestamp_to_datetime(publish_time),
+        url=url,
+        thumbnailUrl=thumbnail_url
+    )
+    post.save()
+
+    return post, info_tags, info_topic
+
+
+def get_info_category(id_category, title):
+    category = Category.objects(idCategory=id_category)
+    if len(category) != 0:
+        return category[0]
+
+    today = format_date(date.today())
+    url = 'https://vnexpress.net/category/day?cateid={cateid}&allcate={allcate}&fromdate={fromdate}&todate={todate}&page={page}'.format(
+        cateid=id_category,
+        allcate=id_category,
+        page=1,
+        fromdate=datetime_to_timestamp(today),
+        todate=datetime_to_timestamp(today)
+    )
+    content = requests.get(url)
+    soup = BeautifulSoup(content.text, 'html.parser')
+    description = soup.find('meta', attrs={'name': 'description'})['content']
+
+    category = Category(
+        idCategory=id_category,
+        title=title,
+        description=description
+    )
+    category.save()
+
+    return category
 
 # ! Get id post from url search
-def getInfoPostByList(URL, date):
-    listInfoPost = []
+
+
+def get_info_post_by_list(URL, date):
+    list_info_post = []
     content = requests.get(URL)
-    print(URL)
     soup = BeautifulSoup(content.text, 'html.parser')
     for elementSource in soup.find_all('article', attrs={"class": "item-news item-news-common"}):
-        # soupEl = BeautifulSoup(str(elementSource), 'html.parser')
-        link = elementSource.find('a', attrs={'class': 'count_cmt', 'href': True})
+        link = elementSource.find(
+            'a', attrs={'class': 'count_cmt', 'href': True})
         if link != None:
             link = link['href']
-        
-        objectId = elementSource.find('span', attrs={'data-objectid': True})
-        if objectId != None:
-            objectId = objectId['data-objectid'] 
-        
-        if link != None and objectId != None:
-            listInfoPost.append({'link': link, 'id': objectId})
 
-    timePublic = []
+        object_id = elementSource.find('span', attrs={'data-objectid': True})
+        if object_id != None:
+            object_id = object_id['data-objectid']
+
+        if link != None and object_id != None:
+            list_info_post.append({'link': link, 'id': object_id})
+
+    time_public = []
     for element in soup.find_all('span', attrs={"class": "time-public"}):
-        timePublic.append(element.text)
+        time_public.append(element.text)
 
     status = True
 
     try:
-        listInfoPost = listInfoPost[:timePublic.index(date)]
+        list_info_post = list_info_post[:time_public.index(date)]
         status = False
     except:
         print()
 
-    return listInfoPost, status
+    if len(list_info_post) == 0:
+        status = False
+
+    return list_info_post, status
 
 
 # ! Get reply comment from a comment in a post
-def getChildrenComment(idPost, idParent):
+def get_children_comment(id_post, id_parent):
     comments = []
-    url = "https://usi-saas.vnexpress.net/index/getreplay?limit=1000000&objecttype=1&offset=0&objectid={objectid}&id={id}".format(objectid = idPost, id = idParent)
+    url = "https://usi-saas.vnexpress.net/index/getreplay?limit=1000000&objecttype=1&offset=0&objectid={objectid}&id={id}".format(
+        objectid=id_post, id=id_parent)
 
-    dataComments = getJsonFromURL(url)
+    data_comments = get_json_from_url(url)
 
-    if type(dataComments['data']) is not list:
-        for comment in dataComments['data']['items']:
-            comments.append({
-                'comment': comment['content'],
-                'createTime': comment['creation_time'],
-                'userLike': comment['userlike']
-            })
+    if 'data' in data_comments \
+            and data_comments['data']['total'] > 0 \
+            and dtype(data_comments['data']) is not list:
+        for item in data_comments['data']['items']:
+            comment = Comment.objects(idComment=item['comment_id'])
+            if len(comment) == 0:
+                comment = Comment(
+                    idComment=str(item['comment_id']),
+                    comment=item['content'],
+                    createTime=timestamp_to_datetime(item['creation_time']),
+                    userLike=item['userlike']
+                )
+                comment.save()
+            else:
+                comment = comment[0]
+
+            comments.append(comment)
     return comments
 
-# ! Get parent comment in a post 
-def getComments(idPost):
-    comments = []
-    url = "https://usi-saas.vnexpress.net/index/get?limit=1000000&siteid=1000000&objecttype=1&objectid={objectid}".format(objectid = idPost)
-    dataComments = getJsonFromURL(url)
-    if type(dataComments['data']) is not list:
-        for comment in dataComments['data']['items']:
-            comments.append({
-                'comment': comment['content'],
-                'createTime': comment['creation_time'],
-                'userLike': comment['userlike']
-            })
+# ! Get parent comment in a post
 
-            if 'replays' in comment and 'total' in comment['replays']:
-                comments.extend(getChildrenComment(idPost, comment['parent_id']))
+
+def get_comments(id_post):
+    comments = []
+    url = "https://usi-saas.vnexpress.net/index/get?limit=1000000&siteid=1000000&objecttype=1&objectid={objectid}".format(
+        objectid=id_post)
+    print(url)
+    data_comments = get_json_from_url(url)
+
+    if 'data' in data_comments \
+            and type(data_comments['data']) is not list:
+        for item in data_comments['data']['items']:
+            comment = Comment.objects(idComment=item['comment_id'])
+            if len(comment) == 0:
+                comment = Comment(
+                    idComment=str(item['comment_id']),
+                    comment=item['content'],
+                    createTime=timestamp_to_datetime(item['creation_time']),
+                    userLike=item['userlike']
+                )
+                comment.save()
+            else:
+                comment = comment[0]
+
+            comments.append(comment)
+
+            if item['comment_id'] != item['parent_id'] \
+                    and 'replays' in item \
+                    and 'total' in item['replays']:
+                comments.extend(get_children_comment(
+                    id_post,
+                    comment['parent_id']
+                ))
 
     return comments
 
-def writeCSVFile(listData, total):
-    with open(pathSaveCSV, 'a+', newline='') as file:
-        writer = csv.writer(file)
-        for num, data in enumerate(listData, start=total):
-            id = "{prefix_id}{lenZero}{number}".format(
-                prefix_id = PREFIX_ID,
-                lenZero = '0' * (6 - len(str(num))),
-                number = num
-            )
-            writer.writerow([id, data])
 
 # TODO ====== Main =============================================================
 
-def getInfoPostByDate(url, date):
-    infoPosts = []
+def get_info_post_by_date(url, date):
+    info_posts = []
     status = True
     page_index = 1
     while status:
-        infoPostsPageCurrent, status = getInfoPostByList(
-            url.format(page = page_index),
-            date = date
+        info_posts_page_current, status = get_info_post_by_list(
+            url.format(page=page_index),
+            date=date
         )
-        infoPosts.extend(infoPostsPageCurrent)
+        info_posts.extend(info_posts_page_current)
         print("Pages: [{page}] Number of post: {numOfPost}".format(
             page=page_index,
-            numOfPost=len(infoPostsPageCurrent)
+            numOfPost=len(info_posts_page_current)
         ))
         page_index = page_index + 1
         if status:
-            status = len(infoPostsPageCurrent)
+            status = len(info_posts_page_current)
 
-    return infoPosts
+    return remove_duplicate(info_posts)
 
-def getInfoPostByPage(url, page):
-    infoPosts = []
-    status = True
+
+def get_info_post_by_page(url, page):
+    info_posts = []
     page_index = 1
     for page_index in range(1, page+1):
-        infoPostsPageCurrent, status = getInfoPostByList(
-            url.format(page = page_index),
-            date = None
+        info_posts_page_current, status = get_info_post_by_list(
+            url.format(page=page_index),
+            date=None
         )
-
-        infoPosts.extend(infoPostsPageCurrent)
+        info_posts.extend(info_posts_page_current)
         print("Pages: [{page}] Number of post: {numOfPost}".format(
             page=page_index,
-            numOfPost=len(infoPostsPageCurrent)
+            numOfPost=len(info_posts_page_current)
         ))
 
-    # print(infoPosts)
-    return infoPosts
+    return remove_duplicate(info_posts)
 
 
-def getInfoPostByCategory(url, fromdate, todate):
-    infoPosts = []
-    status = True
-    page_index = 1
-    while status:
-        infoPostsPageCurrent, status = getInfoPostByList(url.format(
-            page = page_index,
-            fromdate = dateToTimestamp(fromdate),
-            todate = dateToTimestamp(todate)
-        ), date = None)
-        infoPosts.extend(infoPostsPageCurrent)
-        print("Pages: [{page}] Number of post: {numOfPost}".format(
-            page=page_index,
-            numOfPost=len(infoPostsPageCurrent)
+def get_info_post_by_category(category, from_date, to_date):
+    info_posts = []
+    total_category = len(category)
+    for index_category, item in enumerate(category, start=1):
+        status = True
+        page_index = 1
+        category = get_info_category(item['id'], item['title'])
+
+        print('category [{indexCategory}/{totalCategory}]: [{id}] {title}'.format(
+            indexCategory=index_category,
+            totalCategory=index_category,
+            title=item['title'],
+            id=item['id']
         ))
-        page_index = page_index + 1
-        status = len(infoPostsPageCurrent) != 0
 
-    return infoPosts
+        while status:
+            url = 'https://vnexpress.net/category/day?cateid={cateid}&allcate={allcate}&fromdate={fromdate}&todate={todate}&page={page}'.format(
+                cateid=item['id'],
+                allcate=item['id'],
+                page=page_index,
+                fromdate=datetime_to_timestamp(from_date),
+                todate=datetime_to_timestamp(to_date)
+            )
+            info_posts_page_current, status = get_info_post_by_list(
+                url,
+                date=None
+            )
+            for index_post, info_post in enumerate(info_posts_page_current, start=0):
+                post, tags, topic = get_info_post(
+                    info_post['link'],
+                    info_post['id']
+                )
 
-with open(pathSaveCSV, 'w', newline='') as file:
-      writer = csv.writer(file)
-      writer.writerow(['id', 'text'])
+                info_posts_page_current[index_post]['post'] = post
 
-# listIdPost = getInfoPostByCategory(categoryThoiSu, '1/4/2020', '26/5/2020')
-listInfoPost = removeDuplicate(getInfoPostByPage(tagCovid, 5))
-print(listInfoPost)
-totalPost = len(listInfoPost)
-for index, post in enumerate(listInfoPost, start = 1):
-    print("Post[{index}/{total}]: [{post}]".format(
-        post = post['id'],
-        index = index,
-        total = totalPost
+                print('- {title}'.format(
+                    title=post.title
+                ))
+
+                if post not in category.posts:
+                    category.posts.append(post)
+                category.save()
+
+                if tags != None:
+                    for tag in tags:
+                        if post not in tag.posts:
+                            tag.posts.append(post)
+                        tag.save()
+
+                if topic != None:
+                    if post not in topic.posts:
+                        topic.posts.append(post)
+                    topic.save()
+
+            info_posts.extend(info_posts_page_current)
+
+            print("Pages: [{page}] Number of post: {numOfPost}".format(
+                page=page_index,
+                numOfPost=len(info_posts_page_current)
+            ))
+            page_index = page_index + 1
+            status = len(info_posts_page_current) != 0
+
+    return remove_duplicate(info_posts)
+
+
+def filter_posts_by_date(posts_source, date_from, date_to):
+    posts = list(filter(
+        lambda item:
+            item.publishTime <= parser.parse(date_to) and
+            item.publishTime >= parser.parse(date_from),
+        posts_source
     ))
-    comments = getComments(str(post['id']))
-    totalComment = len(comments)
-    for index, comment in enumerate(comments, start = 1):
-        print('[{index}/{totalComment}] - {comment}'.format(
-            comment = comment['comment'],
-            index = index,
-            totalComment = totalComment
-        ))
+    return posts
 
-        Comment(
-            comment = comment['comment']
-        ).save()
-        
-    writeCSVFile(comments, total)
-    total = total + totalComment
+
+def posts_in_topic(id, date_from, date_to):
+    posts_in_topic = Topic.objects.get(idTopic=id).posts
+    return filter_posts_by_date(posts_in_topic, date_from, date_to)
+
+
+def posts_in_tag(id, date_from, date_to):
+    posts_in_tag = Tag.objects.get(idTag=id).posts
+    return filter_posts_by_date(posts_in_tag, date_from, date_to)
+
+
+def top_topics(days):
+    today = format_date(date.today())
+    from_date = format_date(date.today() - timedelta(days=days))
+    topics = Topic.objects()
+
+    topics_obj = []
+    for topic in topics:
+        topics_obj.append({
+            "topic": topic,
+            "posts": posts_in_topic(topic.idTopic, from_date, today)
+        })
+
+    topics_obj = list(filter(lambda item: len(item["posts"]) > 0, topics_obj))
+    topics_obj.sort(key=lambda item: len(item["posts"]), reverse=True)
+
+    topics_result = list(map(lambda item: item["topic"], topics_obj[:30]))
+    posts_result = sum(
+        list(map(lambda item: item["posts"], topics_obj[:30])),
+        []
+    )
+
+    return topics_result, posts_result, from_date, today
+
+
+def top_tags(days):
+    today = format_date(date.today())
+    from_date = format_date(date.today() - timedelta(days=days))
+    tags = Tag.objects()
+
+    tags_obj = []
+
+    for tag in tags:
+        tags_obj.append({
+            "tag": tag,
+            "posts": posts_in_tag(tag.idTag, from_date, today)
+        })
+
+    tags_obj = list(filter(lambda item: len(item["posts"]) > 10, tags_obj))
+    tags_obj.sort(key=lambda item: len(item["posts"]), reverse=True)
+
+    tags_result = list(map(lambda item: item["tag"], tags_obj[:30]))
+    posts_result = sum(
+        list(map(lambda item: item["posts"], tags_obj[:30])), [])
+
+    return tags_result, posts_result, from_date, today
+
+
+def top_tag_in_week():
+    tags, posts, date_from, date_to = top_tags(7)
+    top_tag = TopTag(
+        unitTime="week",
+        tags=tags,
+        posts=posts,
+        dateFrom=date_from,
+        dateTo=date_to
+    )
+    top_tag.save()
+
+
+def top_tag_in_month():
+    tags, posts, date_from, date_to = top_tags(30)
+    top_tag = TopTag(
+        unitTime="month",
+        tags=tags,
+        posts=posts,
+        dateFrom=date_from,
+        dateTo=date_to
+    )
+    top_tag.save()
+
+
+def top_topic_in_week():
+    topics, posts, date_from, date_to = top_topics(7)
+    top_topic = TopTopic(
+        unitTime="week",
+        topics=topics,
+        posts=posts,
+        dateFrom=date_from,
+        dateTo=date_to
+    )
+    top_topic.save()
+
+
+def top_topic_in_month():
+    topics, posts, date_from, date_to = top_topics(30)
+    top_topic = TopTopic(
+        unitTime="month",
+        topics=topics,
+        posts=posts,
+        dateFrom=date_from,
+        dateTo=date_to
+    )
+    top_topic.save()
+
+
+def crawl_all_n_days(n):
+    category = get_category_from_json()
+    today = format_date(date.today())
+    from_date = format_date(date.today() - timedelta(days=n))
+
+    info_posts = get_info_post_by_category(category, from_date, today)
+    total_post = len(info_posts)
+    print("="*20 + "get comment" + "="*20)
+    total = 1
+    for index, info_post in enumerate(info_posts, start=1):
+        print("Post[{index}/{total}]: [{post}]".format(
+            post=info_post['id'],
+            index=index,
+            total=total_post
+        ))
+        comments = get_comments(str(info_post['id']))
+
+        total_comment = len(comments)
+        for index, comment in enumerate(comments, start=1):
+            print('[{index}/{totalComment}] - {comment}'.format(
+                comment=comment.comment,
+                index=index,
+                totalComment=total_comment
+            ))
+            if comment not in info_post['post'].comments:
+                info_post['post'].comments.append(comment)
+        info_post['post'].save()
+        total = total + total_comment
+
+
+def crawl_all_three_days():
+    crawl_all_n_days(3)
+
+
+def crawl_all_a_week():
+    crawl_all_n_days(7)
+
+
+def crawl_all_a_month():
+    crawl_all_n_days(30)
+
+
+def predict_comment():
+    comments = Comment.objects(label=None)
+    print(len(comments))
+    if len(comments) > 0:
+        comment_text = list(map(GET_COMMENT_TEXT, comments))
+        comment_id = list(map(GET_COMMENT_ID, comments))
+        print(comment_text)
+        print(comment_id)
+        df = nomalize_data_comment_vnexpress(comment_id, comment_text)
+        df_result = predict_data(df)
+        for comment in comments:
+            comment.label = df_result[df_result['id']
+                                      == comment.idComment]['label']
+            comment.save()
+    print('Done')
+
+
+if __name__ == '__main__':
+    start = time.time()
+
+    # crawl_all_n_days(0)
+    # crawlAllThreeDays()
+    # crawlAllAWeek()
+    # crawlAllAMonth()
+    predict_comment()
+
+    top_topic_in_week()
+    top_topic_in_month()
+    top_tag_in_week()
+    top_tag_in_month()
+
+    end = time.time()
+    print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
