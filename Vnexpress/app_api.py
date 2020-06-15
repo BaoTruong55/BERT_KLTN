@@ -30,13 +30,16 @@ def format_date(date):
 
 
 def filter_posts_by_date(postsSource, date_from, date_to):
+    if type(date_from) is datetime:
+        date_from = format(date_from)
+
+    if type(date_to) is datetime:
+        date_to = format(date_to)
+
     posts = list(filter(
         lambda item:
-            item.publishTime <= parser.parse(
-                format_date(date_to))
-            and
-            item.publishTime >= parser.parse(
-                format_date(date_from)), postsSource
+            item.publishTime <= parser.parse(date_to) and
+            item.publishTime >= parser.parse(date_from), postsSource
     ))
     return posts
 
@@ -55,7 +58,7 @@ def sentiment_in_posts(posts):
 def classify_comment_by_date(posts):
     classify_post = {}
     for post in posts:
-        if post.publishTime.strftime('%m/%d/%Y') in classifyPost:
+        if post.publishTime.strftime('%m/%d/%Y') in classify_post:
             classify_post[post.publishTime.strftime('%m/%d/%Y')].append(post)
         else:
             classify_post[post.publishTime.strftime('%m/%d/%Y')] = [post]
@@ -76,7 +79,7 @@ def classify_comment_by_date(posts):
     list_post.sort(key=lambda item: item['count_comment'], reverse=True)
 
     classify_comment = {}
-    for key, value in classifyPost.items():
+    for key, value in classify_post.items():
         comments = sum(list(map(GET_COMMENTS_IN_POST, value)), [])
 
         comments_neg = list(filter(IS_LABEL_NEG, comments))
