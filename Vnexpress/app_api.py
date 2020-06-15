@@ -38,7 +38,7 @@ def filter_posts_by_date(postsSource, date_from, date_to):
 
     posts = list(filter(
         lambda item:
-            item.publishTime <= parser.parse(date_to) and
+            item.publishTime <= parser.parse(date_to) + timedelta(days=1) and
             item.publishTime >= parser.parse(date_from), postsSource
     ))
     return posts
@@ -161,9 +161,9 @@ class Vnexpress(Resource):
 
 class Covid(Resource):
     def get(self):
-        dateTo = request.args.get('dateto')
-        dateFrom = request.args.get('datefrom')
-        sentiment_by_date, top_post = tag('1266196', dateFrom, dateTo)
+        date_to = request.args.get('dateto')
+        date_from = request.args.get('datefrom')
+        sentiment_by_date, top_post = tag('1266196', date_from, date_to)
         total_pos = 0
         total_neg = 0
         for item in sentiment_by_date:
