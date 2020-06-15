@@ -35,7 +35,7 @@ parser.add_argument('--rdrsegmenter_path', type=str, required=True)
 parser.add_argument('--pretrained_path', type=str,
                     default='./phobert/model.bin')
 parser.add_argument('--max_sequence_length', type=int, default=256)
-parser.add_argument('--batch_size', type=int, default=13)
+parser.add_argument('--batch_size', type=int, default=8)
 parser.add_argument('--ckpt_path', type=str, default='./models')
 parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",
                     type=str, help='path to fastBPE BPE')

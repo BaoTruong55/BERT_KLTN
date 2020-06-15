@@ -3,4 +3,5 @@ PhoBERT/
 Models/
 Vnexpress/Utils/__pycache__
 __pycache__
+/Front-End/node_modules
 **/**.csv
