@@ -3,10 +3,14 @@ import './World.scss';
 import { ComfirmedCaseChart } from './Components/ComfirmedCaseChart';
 import { DeathsChart } from './Components/DeathsChart';
 import TableTop10 from './Components/TableTop10';
+import { GeoChart } from '../../shared/GeoChart/GeoChart';
 export const World = () => {
   return (
     <div>
       <h1 className="h1 title">World</h1>
+      <div className="row">
+        <GeoChart />
+      </div>
       <div className="row">
         <div className="col-md-6 col-sm-12 mb-4">
           <div className="card">

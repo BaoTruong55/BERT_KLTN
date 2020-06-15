@@ -7,7 +7,7 @@ export const LineChart = (props) => {
     datasets: [
       {
         label: 'Pos',
-        lineTension: 0.5,
+        lineTension: 0.1,
         backgroundColor: 'rgba(75,192,192,0.4)',
         borderColor: '#FF6384',
         borderCapStyle: 'butt',
@@ -28,7 +28,7 @@ export const LineChart = (props) => {
       },
       {
         label: 'Neg',
-        lineTension: 0.5,
+        lineTension: 0.1,
         backgroundColor: 'rgba(75,192,192,0.4)',
         borderColor: '#FFCE56',
         borderCapStyle: 'butt',
@@ -50,9 +50,15 @@ export const LineChart = (props) => {
     ],
   };
 
+  const options = {
+    tooltips: {
+      intersect: false,
+    },
+  }
+
   return (
     <div>
-      <Line data={data} />
+      <Line data={data} options={options}/>
     </div>
   );
 };

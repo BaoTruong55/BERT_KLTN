@@ -23,6 +23,7 @@ import { Nodata } from '../Nodata/Nodata';
 import axios from 'axios';
 import { Loading } from '../../shared/Loading/Loading';
 import { PostDetail } from '../../shared/PostDetail/PostDetail';
+import { PolarChart } from '../../shared/PolarChart/PolarChart.js';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -228,6 +229,7 @@ export const Category = () => {
                     {console.log(data.data.totalPos)}
                     <DonutChart
                       data={[data.data.totalPos, data.data.totalNeg]}
+                      labels={['Positive', 'Negative']}
                     />
                   </div>
                 </div>
@@ -250,19 +252,18 @@ export const Category = () => {
             </div>
             <div className="d-flex flex-column align-items-center">
               <div className="top-post">
-              {data.data.top_post.map((e, index) => {
-                return (
-                  <PostDetail
-                    link={e.url}
-                    title={e.title}
-                    description={e.description}
-                    thumbnailUrl={e.thumbnailUrl}
-                  />
-                );
-              })}
+                {data.data.top_post.map((e, index) => {
+                  return (
+                    <PostDetail
+                      link={e.url}
+                      title={e.title}
+                      description={e.description}
+                      thumbnailUrl={e.thumbnailUrl}
+                    />
+                  );
+                })}
+              </div>
             </div>
-            </div>
-            
           </div>
         ) : (
           <Nodata />
