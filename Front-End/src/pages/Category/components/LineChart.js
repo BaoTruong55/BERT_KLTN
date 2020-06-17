@@ -52,9 +52,32 @@ export const LineChart = (props) => {
 
   const options = {
     tooltips: {
+      mode: 'x-axis',
       intersect: false,
     },
-  }
+    scales: {
+      xAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+          gridLines: {
+            display: false,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+          gridLines: {
+            display: true,
+          },
+        },
+      ],
+    },
+  };
 
   return (
     <div>

@@ -1,37 +1,80 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 
-export const ComfirmedCaseChart = () => {
+export const ComfirmedCaseChart = (props) => {
   const data = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    labels: props.labels,
     datasets: [
       {
-        label: 'My First dataset',
+        label: 'Khỏi',
         lineTension: 0.1,
-        backgroundColor: 'rgba(75,192,192,0.4)',
-        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: '#00945e',
+        borderColor: '#00945e',
+        borderCapStyle: 'butt',
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: '#00945e',
+        pointBackgroundColor: '#fff',
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#00945e',
+        pointHoverBorderColor: '#00945e',
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        fill: true,
+        data: props.data2,
+      },
+      {
+        label: 'Nhiễm',
+        lineTension: 0.1,
+        backgroundColor: '#9F224E',
+        borderColor: '#9F224E',
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
         borderJoinStyle: 'miter',
-        pointBorderColor: 'rgba(75,192,192,1)',
+        pointBorderColor: '#9F224E',
         pointBackgroundColor: '#fff',
         pointBorderWidth: 1,
         pointHoverRadius: 5,
-        pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-        pointHoverBorderColor: 'rgba(220,220,220,1)',
+        pointHoverBackgroundColor: '#9F224E',
+        pointHoverBorderColor: '#9F224E',
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        fill:true,
-        data: [65, 59, 80, 81, 56, 55, 40],
+        fill: true,
+        data: props.data1,
       },
     ],
   };
 
+  const options = {
+    tooltips: {
+      mode: 'x-axis',
+      intersect: false,
+    },
+    scales: {
+      xAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+        },
+      ],
+    },
+  };
+
   return (
     <div>
-      <Line data={data} />
+      <Line data={data} options={options} />
     </div>
   );
 };

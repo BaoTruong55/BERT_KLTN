@@ -16,6 +16,7 @@
     "normalize.css": "^8.0.1",
     "react": "^16.13.1",
     "react-chartjs-2": "^2.9.0",
+    "react-d3-cloud": "^0.7.0",
     "react-date-range": "^1.0.3",
     "react-dom": "^16.13.1",
     "react-google-charts": "^3.0.15",

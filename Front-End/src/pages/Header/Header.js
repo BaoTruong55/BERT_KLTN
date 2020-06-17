@@ -18,7 +18,7 @@ export default function NavTabs() {
         case '/':
           setValue(0);
           break;
-        case '/world':
+        case '/vietnam':
           setValue(1);
           break;
         case '/ros':
@@ -51,7 +51,7 @@ export default function NavTabs() {
             aria-label="nav tabs example"
           >
             <Tab label="Home" component={Link} to="/" />
-            <Tab label="World" component={Link} to="/world" />
+            <Tab label="Việt Nam" component={Link} to="/vietnam" />
             <Tab label="RoS" component={Link} to="/ros" />
             <Tab label="Post" component={Link} to="/post" />
             <Tab label="Topic" component={Link} to="/topic" />
@@ -59,7 +59,7 @@ export default function NavTabs() {
         </AppBar>
         <div className="component">
           <Route exact path="/" component={Homepage} />
-          <Route path="/world" component={World} />
+          <Route path="/vietnam" component={World} />
           <Route path="/ros" component={Category} />
           <Route path="/post" component={Post} />
           <Route path="/topic" component={Topic} />

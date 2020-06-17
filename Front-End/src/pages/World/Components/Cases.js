@@ -1,15 +1,15 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 
-export const DeathsChart = () => {
+export const CasesChart = (props) => {
   const data = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    labels: props.labels,
     datasets: [
       {
-        label: 'My First dataset',
+        label: 'Đang điều trị',
         lineTension: 0.1,
         backgroundColor: 'rgba(255, 92, 0, 0.83)',
-        borderColor: 'rrgba(255, 92, 0, 1)',
+        borderColor: 'rgba(255, 92, 0, 1)',
         borderCapStyle: 'butt',
         borderDash: [],
         borderDashOffset: 0.0,
@@ -23,15 +23,44 @@ export const DeathsChart = () => {
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        fill:true,
-        data: [65, 59, 80, 81, 56, 55, 40],
+        fill: true,
+        data: props.data,
       },
     ],
   };
 
+  const options = {
+    tooltips: {
+      mode: 'x-axis',
+      intersect: false,
+    },
+    scales: {
+      xAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+          gridLines: {
+            display: false,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 5,
+          },
+          gridLines: {
+            display: true,
+          },
+        },
+      ],
+    },
+  };
+
   return (
     <div>
-      <Line data={data} />
+      <Line height={50} data={data} options={options} />
     </div>
   );
 };

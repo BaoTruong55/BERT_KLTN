@@ -23,8 +23,6 @@ import { Nodata } from '../Nodata/Nodata';
 import axios from 'axios';
 import { Loading } from '../../shared/Loading/Loading';
 import { PostDetail } from '../../shared/PostDetail/PostDetail';
-import { PolarChart } from '../../shared/PolarChart/PolarChart.js';
-
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });

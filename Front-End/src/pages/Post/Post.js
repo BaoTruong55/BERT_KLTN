@@ -115,32 +115,12 @@ export function Post() {
         {search ? (
           <div className="row mt-5">
             <div className="col-md-6 col-sm-12">
-              <div className="row m-0">
-                <div className="col-md-8">
-                  <a
-                    href={link}
-                    target="_blank"
-                    className="link-style"
-                    rel="noopener noreferrer"
-                  >
-                    <h3>{data.title}</h3>
-                  </a>
-                  <p>{data.description}</p>
-                </div>
-                <div className="col-md-4 thumb-art">
-                  <img
-                    src={data.thumbnailUrl}
-                    className="thumb-art_img"
-                    alt=""
-                  />
-                </div>
-              </div>
-              {/* <PostDetail
+              <PostDetail
                 link={link}
                 title={data.title}
                 description={data.description}
                 thumbnailUrl={data.thumbnailUrl}
-              /> */}
+              />
               <AppBar className="mt-5" position="static" color="default">
                 <Tabs
                   value={value}
@@ -183,7 +163,7 @@ export function Post() {
                     <tbody>
                       {data.commentNeg.map((e, index) => {
                         return (
-                          <tr>
+                          <tr key={index}>
                             <th scope="row">{index + 1}</th>
                             <td>{e.data_text}</td>
                           </tr>
@@ -199,7 +179,10 @@ export function Post() {
                 Biểu đồ thể hiện tỷ lệ Positive và Negative ở trong bài báo.
               </h6>
               <div className="chart">
-                <DonutChart data={[data.pos, data.neg]} />
+                <DonutChart
+                  data={[data.pos, data.neg]}
+                  labels={['Positive', 'Negative']}
+                />
               </div>
             </div>
           </div>

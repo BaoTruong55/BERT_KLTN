@@ -1,26 +1,24 @@
 import React from 'react';
 import { Chart } from 'react-google-charts';
 
-export const GeoChart = () => {
+export const GeoChart = (props) => {
   return (
     <div>
       <Chart
-        width={'500px'}
-        height={'300px'}
+        width={'1000px'}
+        height={'700px'}
         chartType="GeoChart"
-        data={[
-          ['City', 'Population', 'Area'],
-          ['Ha Noi', 2761477, 20],
-          ['Quang Tri', 1324110, 181.76],
-          ['Hue', 959574, 117.27],
-          ['Da Nang', 907563, 130.17],
-          ['Ho Chi Minh', 655875, 10.9],
-        ]}
+        data={props.data}
         options={{
           region: 'VN',
           displayMode: 'markers',
-          sizeAxis: { minValue: 0, maxValue: 100 },
           colorAxis: { colors: ['green', 'red'] },
+          backgroundColor: '#fff',
+          datalessRegionColor: '#FFE6B3',
+          defaultColor: '#f5f5f5',
+          magnifyingGlass: { enable: true, zoomFactor: 7.5 },
+          resolution: 'provinces',
+          forceIFrame: true
         }}
         // Note: you will need to get a mapsApiKey for your project.
         // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
