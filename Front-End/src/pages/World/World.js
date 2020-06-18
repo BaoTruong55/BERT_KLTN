@@ -28,7 +28,7 @@ export const World = () => {
   useEffect(() => {
     async function fetchMyAPI() {
       setLoading(true);
-      let response = await axios
+      await axios
         .get('https://gw.vnexpress.net/cr/?name=tracker_coronavirus')
         .then((res) => {
           console.log(res.data.data);
