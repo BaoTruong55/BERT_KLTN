@@ -192,8 +192,8 @@ class TopTopics(Resource):
                 "title": item.title,
                 "description": item.description,
                 "count_posts": len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)),
-                "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_neg']),
-                "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_pos'])
+                # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_neg']),
+                # "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_pos'])
             }, top_topic.topics
         ))
         return Response(json.dumps(topics), mimetype='application/json')
@@ -210,8 +210,8 @@ class TopTags(Resource):
                 "title": item.name,
                 "url": item.url,
                 "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
-                "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
-                "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_pos'])
+                # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
+                # "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_pos'])
             }, top_tag.tags
         ))
         return Response(json.dumps(tags), mimetype='application/json')
@@ -255,16 +255,19 @@ class CategorySentiment(Resource):
 class TagSentiment(Resource):
     def get(self):
         id_tag = request.args.get('idtag')
+        top_tag = TopTag.objects(
+            unitTime='month'
+        ).order_by('-created').first()
 
         if request.args.get('dateto') != None:
             date_to = request.args.get('dateto')
         else:
-            date_to = format_date(date.today())
+            date_to = format_date(top_tag.dateTo)
 
         if request.args.get('datefrom') != None:
             date_from = request.args.get('datefrom')
         else:
-            date_from = format_date(date.today() - timedelta(days=30))
+            date_from = format_date(top_tag.dateFrom)
 
         sentiment_by_date, top_post = tag(id_tag, date_from, date_to)
         total_pos = 0
@@ -286,15 +289,19 @@ class TopicSentiment(Resource):
     def get(self):
         id_topic = request.args.get('idtopic')
 
+        top_topic = TopTopic.objects(
+            unitTime='month'
+        ).order_by('-created').first()
+
         if request.args.get('dateto') != None:
             date_to = request.args.get('dateto')
         else:
-            date_to = format_date(date.today())
+            date_to = format_date(top_topic.dateTo)
 
         if request.args.get('datefrom') != None:
             date_from = request.args.get('datefrom')
         else:
-            date_from = format_date(date.today() - timedelta(days=30))
+            date_from = format_date(top_topic.dateFrom)
 
         sentiment_by_date, top_post = topic(id_topic, date_from, date_to)
         total_pos = 0
