@@ -29,6 +29,11 @@ def format_date(date):
     return str(f'{date:%m/%d/%Y}')
 
 
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
+
 def filter_posts_by_date(postsSource, date_from, date_to):
     if type(date_from) is datetime:
         date_from = format(date_from)
@@ -55,8 +60,11 @@ def sentiment_in_posts(posts):
     }
 
 
-def classify_comment_by_date(posts):
+def classify_comment_by_date(posts, date_from, date_to):
     classify_post = {}
+    for single_date in daterange(parser.parse(date_from), parser.parse(date_to)):
+        classify_post[single_date.strftime('%m/%d/%Y')] = []
+
     for post in posts:
         if post.publishTime.strftime('%m/%d/%Y') in classify_post:
             classify_post[post.publishTime.strftime('%m/%d/%Y')].append(post)
@@ -105,19 +113,19 @@ def classify_comment_by_date(posts):
 def tag(id, date_from, date_to):
     posts_in_tag = Tag.objects.get(idTag=id).posts
     posts = filter_posts_by_date(posts_in_tag, date_from, date_to)
-    return classify_comment_by_date(posts)
+    return classify_comment_by_date(posts, date_from, date_to)
 
 
 def category(id, date_from, date_to):
     posts_in_category = Category.objects.get(idCategory=id).posts
     posts = filter_posts_by_date(posts_in_category, date_from, date_to)
-    return classify_comment_by_date(posts)
+    return classify_comment_by_date(posts, date_from, date_to)
 
 
 def topic(id, date_from, date_to):
     posts_in_topic = Topic.objects.get(idTopic=id).posts
     posts = filter_posts_by_date(posts_in_topic, date_from, date_to)
-    return classify_comment_by_date(posts)
+    return classify_comment_by_date(posts, date_from, date_to)
 
 
 def posts_in_topic(id, date_from, date_to):
@@ -142,8 +150,12 @@ class Vnexpress(Resource):
         df = normalize_data(comments)
         df_result = predict_data(df)
         df_output = DataFrame(df_result, columns=['data_text', 'label'])
-        df_negatives = df_output[df_output['label'] == 0]
-        df_possitives = df_output[df_output['label'] == 1]
+        df_negatives = df_output[df_output['label'] == 0].map(
+            lambda item: item.replace('<br/>', '/n')
+        )
+        df_possitives = df_output[df_output['label'] == 1].map(
+            lambda item: item.replace('<br/>', '/n')
+        )
 
         output = {
             "title": title,
@@ -189,7 +201,7 @@ class TopTopics(Resource):
         topics = list(map(
             lambda item: {
                 "id": item.idTopic,
-                "title": item.title,
+                "title": item.title.split('-')[0],
                 "description": item.description,
                 "count_posts": len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)),
                 # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_neg']),
@@ -207,7 +219,7 @@ class TopTags(Resource):
         tags = list(map(
             lambda item: {
                 "id": item.idTag,
-                "title": item.name,
+                "title": item.name.split('-')[0],
                 "url": item.url,
                 "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
                 # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
@@ -321,12 +333,12 @@ class TopicSentiment(Resource):
 
 api.add_resource(Vnexpress, '/vnexpress')
 api.add_resource(Covid, '/vnexpress/covid')
-api.add_resource(TopTopics, '/vnexpress/toptopic')
 api.add_resource(TopTags, '/vnexpress/toptag')
+api.add_resource(TopTopics, '/vnexpress/toptopic')
 api.add_resource(Categories, '/vnexpress/categories')
+api.add_resource(TagSentiment, '/vnexpress/tagsentiment')
 api.add_resource(TopicSentiment, '/vnexpress/topicsentiment')
 api.add_resource(CategorySentiment, '/vnexpress/categorysentiment')
-api.add_resource(TagSentiment, '/vnexpress/tagsentiment')
 
 if __name__ == '__main__':
     app.run()
