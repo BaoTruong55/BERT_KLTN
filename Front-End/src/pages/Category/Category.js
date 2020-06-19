@@ -97,6 +97,10 @@ export const Category = () => {
     setConvertRange(start + ' - ' + end);
   }
 
+  const getReturnData = (e) => {
+    console.log(e);
+  };
+
   /**
    * fetch data from post's link
    */
@@ -245,6 +249,7 @@ export const Category = () => {
                   <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">
                     <LineChart
+                      onReturnData={getReturnData}
                       dataPos={data.data.dataPos}
                       dataNeg={data.data.dataNeg}
                       labels={data.data.labels}
@@ -261,6 +266,7 @@ export const Category = () => {
                 {data.data.top_post.map((e, index) => {
                   return (
                     <PostDetail
+                      key={index}
                       link={e.url}
                       title={e.title}
                       description={e.description}

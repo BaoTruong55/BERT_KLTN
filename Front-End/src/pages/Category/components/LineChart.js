@@ -79,9 +79,14 @@ export const LineChart = (props) => {
     },
   };
 
+  const handleClick = (elems, event) => {
+    // console.log(data.labels[elems[0]._index]);
+    props.onReturnData(data.labels[elems[0]._index])
+  };
+
   return (
     <div>
-      <Line data={data} options={options}/>
+      <Line data={data} options={options} getElementsAtEvent={handleClick} />
     </div>
   );
 };
