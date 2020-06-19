@@ -30,7 +30,7 @@ def format_date(date):
 
 
 def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days)):
+    for n in range(int((end_date - start_date).days + 1)):
         yield start_date + timedelta(n)
 
 
@@ -66,10 +66,7 @@ def classify_comment_by_date(posts, date_from, date_to):
         classify_post[single_date.strftime('%m/%d/%Y')] = []
 
     for post in posts:
-        if post.publishTime.strftime('%m/%d/%Y') in classify_post:
-            classify_post[post.publishTime.strftime('%m/%d/%Y')].append(post)
-        else:
-            classify_post[post.publishTime.strftime('%m/%d/%Y')] = [post]
+        classify_post[post.publishTime.strftime('%m/%d/%Y')].append(post)
 
     list_post = list(
         map(
@@ -87,15 +84,30 @@ def classify_comment_by_date(posts, date_from, date_to):
     list_post.sort(key=lambda item: item['count_comment'], reverse=True)
 
     classify_comment = {}
-    for key, value in classify_post.items():
-        comments = sum(list(map(GET_COMMENTS_IN_POST, value)), [])
+    for key, value_posts in classify_post.items():
+        comments = sum(list(map(GET_COMMENTS_IN_POST, value_posts)), [])
 
         comments_neg = list(filter(IS_LABEL_NEG, comments))
         comments_pos = list(filter(IS_LABEL_POS, comments))
         # comments_text_neg = list(map(GET_COMMENT, comments_neg))
         # comments_text_pos = list(map(GET_COMMENT, comments_pos))
 
+        posts_map = list(
+            map(
+                lambda item: {
+                    "title": item.title,
+                    "url": item.url.split('#')[0],
+                    "thumbnailUrl": item.thumbnailUrl,
+                    "description": item.description,
+                    "count_comment": len(item.comments)
+                },
+                value_posts
+            )
+        )
+
         classify_comment[key] = {
+            "count_post": len(posts_map),
+            "posts": posts_map,
             "pos": len(comments_pos),
             "neg": len(comments_neg),
         }
@@ -188,7 +200,6 @@ class Covid(Resource):
             "top_post": top_post,
             "sentiment_by_date": sentiment_by_date
         }
-
         return Response(json.dumps(result), mimetype='application/json')
 
 
@@ -201,7 +212,7 @@ class TopTopics(Resource):
         topics = list(map(
             lambda item: {
                 "id": item.idTopic,
-                "title": item.title.split('-')[0],
+                "title": "-".join(item.title.split('-')[:-1]),
                 "description": item.description,
                 "count_posts": len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)),
                 # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_neg']),
@@ -219,7 +230,7 @@ class TopTags(Resource):
         tags = list(map(
             lambda item: {
                 "id": item.idTag,
-                "title": item.name.split('-')[0],
+                "title": "-".join(item.name.split('-')[:-1]),
                 "url": item.url,
                 "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
                 # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
