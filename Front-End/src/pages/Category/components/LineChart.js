@@ -6,7 +6,7 @@ export const LineChart = (props) => {
     labels: props.labels,
     datasets: [
       {
-        label: 'Positive',
+        label: 'Tích cực',
         lineTension: 0.1,
         backgroundColor: 'rgba(75,192,192,0.4)',
         borderColor: '#FF6384',
@@ -27,7 +27,7 @@ export const LineChart = (props) => {
         data: props.dataPos,
       },
       {
-        label: 'Negative',
+        label: 'Tiêu cực',
         lineTension: 0.1,
         backgroundColor: 'rgba(75,192,192,0.4)',
         borderColor: '#FFCE56',

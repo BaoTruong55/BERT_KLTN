@@ -50,11 +50,11 @@ export default function NavTabs() {
             onChange={handleChange}
             aria-label="nav tabs example"
           >
-            <Tab label="Home" component={Link} to="/" />
+            <Tab label="Trang chủ" component={Link} to="/" />
             <Tab label="Việt Nam" component={Link} to="/vietnam" />
-            <Tab label="RoS" component={Link} to="/ros" />
-            <Tab label="Post" component={Link} to="/post" />
-            <Tab label="Topic" component={Link} to="/topic" />
+            <Tab label="Covid" component={Link} to="/ros" />
+            <Tab label="Bài viết" component={Link} to="/post" />
+            <Tab label="Chủ đề nổi bật" component={Link} to="/topic" />
           </Tabs>
         </AppBar>
         <div className="component">

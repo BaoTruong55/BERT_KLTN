@@ -108,12 +108,12 @@ export function Post() {
   } else {
     return (
       <div>
-        <h1 className="h1 title">Post</h1>
+        <h1 className="h1 title">Bài viết</h1>
         <div className="row">
           <div className="col-4 d-flex inputGroup">
             <input
               className="inputSearch input-group-text text-left"
-              placeholder="Post's link"
+              placeholder="Link của bài viết"
               onChange={getInput}
             />
             <Button
@@ -121,7 +121,7 @@ export function Post() {
               variant="contained"
               className="btnSearch"
             >
-              Search
+              Tìm kiếm
             </Button>
           </div>
         </div>
@@ -143,8 +143,8 @@ export function Post() {
                   variant="fullWidth"
                   aria-label="full width tabs example"
                 >
-                  <Tab label="Positive" {...a11yProps(0)} />
-                  <Tab label="Negative" {...a11yProps(1)} />
+                  <Tab label="Tích cực" {...a11yProps(0)} />
+                  <Tab label="Tiêu cực" {...a11yProps(1)} />
                 </Tabs>
               </AppBar>
               <SwipeableViews
@@ -159,7 +159,7 @@ export function Post() {
                         return (
                           <tr key={index}>
                             <th scope="row">{index + 1}</th>
-                            <td>{e.data_text}</td>
+                            <td><div dangerouslySetInnerHTML={{ __html: e.data_text }} /></td>
                           </tr>
                         );
                       })}
@@ -194,7 +194,7 @@ export function Post() {
               <div className="chart">
                 <DonutChart
                   data={[data.pos, data.neg]}
-                  labels={['Positive', 'Negative']}
+                  labels={['Tích cực', 'Tiêu cực']}
                 />
               </div>
             </div>

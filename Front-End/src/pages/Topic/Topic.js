@@ -108,11 +108,11 @@ export const Topic = () => {
   } else {
     return (
       <div>
-        <h1 className="h1 title">Topic</h1>
+        <h1 className="h1 title">Chủ đề nổi bật</h1>
         <div className="row">
           <div className="col-md-6">
             <div className="card">
-              <h4 className="card-header">Popular Topic</h4>
+              <h4 className="card-header">Chủ đề phổ biến</h4>
               <div className="card-body">
                 <WordCloud
                   data={dataTopic}
@@ -125,7 +125,7 @@ export const Topic = () => {
           </div>
           <div className="col-md-6">
             <div className="card">
-              <h4 className="card-header">Popular Tag</h4>
+              <h4 className="card-header">Tag phổ biến</h4>
               <div className="card-body">
                 <WordCloud
                   data={dataTag}
@@ -149,18 +149,18 @@ export const Topic = () => {
             <div className="row">
               <div className="col-md-6 col-sm 12">
                 <div className="card">
-                  <h4 className="card-header">Pos and Neg</h4>
+                  <h4 className="card-header">Tích cực và Tiêu cực</h4>
                   <div className="card-body">
                     <DonutChart
                       data={[dataDetail.total_pos, dataDetail.total_neg]}
-                      labels={['Positive', 'Negative']}
+                      labels={['Tích cực', 'Tiêu cực']}
                     />
                   </div>
                 </div>
               </div>
               <div className="col-md-6 col-sm 12">
                 <div className="card">
-                  <h4 className="card-header">Reaction of society</h4>
+                  <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">
                     <LineChart
                       dataPos={dataDetail.sentiment_by_date.map((e) => {
@@ -178,7 +178,7 @@ export const Topic = () => {
               </div>
             </div>
             <div className="mt-5">
-              <h2>Top post:</h2>
+              <h2>Bài viết tiêu biểu:</h2>
             </div>
             <div className="d-flex flex-column align-items-center">
               <div className="top-post">

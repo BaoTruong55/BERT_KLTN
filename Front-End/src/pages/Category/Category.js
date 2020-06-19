@@ -165,12 +165,12 @@ export const Category = () => {
     return (
       <div>
         {/* ------------------------------------------------------------------------------------------------ */}
-        <h1 className="h1 title">Reaction of society</h1>
+        <h1 className="h1 title">Phản ứng của xã hội</h1>
         <div className="row">
           <div className="col-12 d-flex align-items-center">
             <FormControl className={classes.formControl}>
               <InputLabel className="" htmlFor="standard-adornment-password">
-                Time
+                Thời gian
               </InputLabel>
               <Input
                 className=""
@@ -209,7 +209,7 @@ export const Category = () => {
               />
               <DialogActions>
                 <Button onClick={handleDialog} color="primary">
-                  Agree
+                  Đồng ý
                 </Button>
               </DialogActions>
             </Dialog>
@@ -220,7 +220,7 @@ export const Category = () => {
               className="filterBtn"
               onClick={handleFilter}
             >
-              Filter
+              Lọc
             </Button>
           </div>
         </div>
@@ -230,19 +230,19 @@ export const Category = () => {
             <div className="row">
               <div className="col-md-6 col-sm 12">
                 <div className="card">
-                  <h4 className="card-header">Pos and Neg</h4>
+                  <h4 className="card-header">Tích cực và Tiêu cực</h4>
                   <div className="card-body">
                     {console.log(data.data.totalPos)}
                     <DonutChart
                       data={[data.data.totalPos, data.data.totalNeg]}
-                      labels={['Positive', 'Negative']}
+                      labels={['Tích cực', 'Tiêu cực']}
                     />
                   </div>
                 </div>
               </div>
               <div className="col-md-6 col-sm 12">
                 <div className="card">
-                  <h4 className="card-header">Reaction of society</h4>
+                  <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">
                     <LineChart
                       dataPos={data.data.dataPos}
@@ -254,7 +254,7 @@ export const Category = () => {
               </div>
             </div>
             <div className="mt-5">
-              <h2>Top post:</h2>
+              <h2>Bài viết tiêu biểu:</h2>
             </div>
             <div className="d-flex flex-column align-items-center">
               <div className="top-post">
