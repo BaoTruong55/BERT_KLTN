@@ -14,7 +14,6 @@ export const World = () => {
   const [loading, setLoading] = useState(true);
   const [mapData, setMapData] = useState([]);
   const [error, setError] = React.useState(false);
-
   const [dataChart, setDataChart] = useState({
     growthName: [],
     growthValue: [],
@@ -25,6 +24,9 @@ export const World = () => {
     dayRecovered: [],
   });
 
+  /**
+   * fetch data from website VnExpress
+   */
   useEffect(() => {
     async function fetchMyAPI() {
       setLoading(true);

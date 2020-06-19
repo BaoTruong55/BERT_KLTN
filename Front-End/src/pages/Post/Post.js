@@ -48,25 +48,38 @@ export function Post() {
   const [value, setValue] = React.useState(0);
   const [search, setSearch] = React.useState(false);
   const [link, setLink] = React.useState('');
-
-  // const [error, setError] = React.useState(null);
   const [isLoaded, setIsLoaded] = React.useState(false);
-  // const [items, setItems] = React.useState([]);
   const [data, setData] = React.useState();
 
+  /**
+   * Change value of tag
+   * @param {*} event Event click
+   * @param {*} newValue value of tab
+   */
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
+  /**
+   * Change index of tag
+   * @param {*} index Index of tag
+   */
   const handleChangeIndex = (index) => {
     setValue(index);
   };
 
+  /**
+   * get value of input 
+   * @param {string} event Event on change
+   */
   const getInput = (event) => {
     console.log(event.target.value);
     setLink(event.target.value);
   };
 
+  /**
+   * get data from link
+   */
   const handleSearch = () => {
     if (link !== '') {
       setIsLoaded(true);

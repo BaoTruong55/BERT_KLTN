@@ -9,6 +9,7 @@ import WordCloud from 'react-d3-cloud';
 import { PostDetail } from '../../shared/PostDetail/PostDetail';
 import { LineChart } from '../Category/components/LineChart';
 import { DonutChart } from '../Category/components/DonutChart';
+import { Nodata } from '../Nodata/Nodata';
 
 export const Topic = () => {
   const [dataTopic, setDataTopic] = useState();
@@ -16,10 +17,15 @@ export const Topic = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(false);
   const [dataDetail, setDataDetail] = useState();
+  const [err, setErr] = useState(false);
   const [name, setName] = useState({ item: '', text: '' });
 
+  /**
+   * fetch data from 2 link
+   */
   useEffect(() => {
     setLoading(true);
+    setErr(false);
     let one = 'http://127.0.0.1:5000/vnexpress/toptopic';
     let two = 'http://127.0.0.1:5000/vnexpress/toptag';
 
@@ -40,12 +46,19 @@ export const Topic = () => {
         })
       )
       .catch((errors) => {
+        console.log('object');
+        setErr(true);
         setLoading(false);
         alert('Oops, Something went wrong! Please try again.');
         console.log(errors);
       });
   }, []);
 
+  /**
+   * Format array data and return a new array
+   * @param {Array} res A array data
+   * @param {string} item Type of array data (topic or tag)
+   */
   function getData(res, item) {
     return res.map((e) => ({
       id: e.id,
@@ -55,8 +68,16 @@ export const Topic = () => {
     }));
   }
 
+  /**
+   * I dont know. I just copy on Stackoverflow
+   * @param {*} word Word in worldCloud
+   */
   const fontSizeMapper = (word) => Math.log2(word.value) * 5;
 
+  /**
+   * Get event when click on word, then fetch API with word's id
+   * @param {event} e 
+   */
   const handleChange = (e) => {
     console.log(e);
     let topicDetail = 'http://127.0.0.1:5000/vnexpress/topicsentiment?idtopic=';
@@ -73,14 +94,17 @@ export const Topic = () => {
         document.getElementById('result').scrollIntoView();
       })
       .catch((err) => {
-        setLoading(false);
         alert('Oops, Something went wrong! Please try again.');
+        setLoading(true);
         console.log(err);
       });
   };
 
   if (loading) {
     return <Loading />;
+  } else if (err) {
+    console.log(err);
+    return <Nodata />;
   } else {
     return (
       <div>

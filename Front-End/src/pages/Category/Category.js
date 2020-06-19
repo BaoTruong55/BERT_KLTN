@@ -72,7 +72,8 @@ export const Category = () => {
   };
 
   /**
-   * convert pick time => show time
+   * Convert time before Show time on DateRangePicker and return Date MM/DD/YYYY
+   * @param {Date} time ddd MMM DD YYYY HH:mm:ss ZZ
    */
   function convertTime(time) {
     return moment
@@ -81,6 +82,10 @@ export const Category = () => {
       .format('MM/DD/YYYY');
   }
 
+  /**
+   *  Handle date and time, then setRangeFormat and setConvertRange
+   * @param {Date} item DateRangePicker
+   */
   function handleSelect(item) {
     setRangePicker([item.selection]);
     let start = convertTime(item.selection.startDate);
@@ -92,6 +97,9 @@ export const Category = () => {
     setConvertRange(start + ' - ' + end);
   }
 
+  /**
+   * fetch data from post's link
+   */
   const handleFilter = () => {
     console.log(rangeFormat);
     setLoading(true);
