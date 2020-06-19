@@ -43,14 +43,19 @@ export const Category = () => {
   const [convertRange, setConvertRange] = React.useState('');
   const [filter, setFilter] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [displayTop, setDisplayTop] = React.useState(false);
+  const [displayPost, setDisplayPost] = React.useState(false);
+  const [dataPost, setDataPost] = React.useState();
   const [data, setData] = React.useState({
     data: {
+      allData: [],
       labels: [],
       dataPos: [],
       dataNeg: [],
       totalPos: 0,
       totalNeg: 0,
       top_pos: [],
+      countPost: [],
     },
   });
   const [rangePicker, setRangePicker] = React.useState([
@@ -99,6 +104,10 @@ export const Category = () => {
 
   const getReturnData = (e) => {
     console.log(e);
+    let resData = data.data.allData.filter((elems) => elems.date === e);
+    setDataPost(resData[0]);
+    setDisplayTop(false);
+    setDisplayPost(true);
   };
 
   /**
@@ -139,15 +148,21 @@ export const Category = () => {
           setData({
             ...data,
             data: {
+              allData: res.data.sentiment_by_date,
               labels: labels,
               dataPos: dataPos,
               dataNeg: dataNeg,
               totalPos: res.data.total_pos,
               totalNeg: res.data.total_neg,
               top_post: top_post,
+              countPost: res.data.sentiment_by_date.map((e) => {
+                return e.data.count_post;
+              }),
             },
           });
           setFilter(true);
+          setDisplayTop(true);
+          setDisplayPost(false);
           setLoading(false);
         } else {
           setFilter(false);
@@ -252,6 +267,7 @@ export const Category = () => {
                       onReturnData={getReturnData}
                       dataPos={data.data.dataPos}
                       dataNeg={data.data.dataNeg}
+                      dataPost={data.data.countPost}
                       labels={data.data.labels}
                     />
                   </div>
@@ -259,21 +275,49 @@ export const Category = () => {
               </div>
             </div>
             <div className="mt-5">
-              <h2>Bài viết tiêu biểu:</h2>
+              {(data.data.top_post == null && displayTop) ||
+              (dataPost == null && displayPost) ? (
+                <div>Không có bài viết</div>
+              ) : displayTop ? (
+                <h2>Bài viết tiêu biểu:</h2>
+              ) : displayPost ? (
+                <h2>Bài viết trong ngày {dataPost.date}:</h2>
+              ) : (
+                <div></div>
+              )}
             </div>
             <div className="d-flex flex-column align-items-center">
               <div className="top-post">
-                {data.data.top_post.map((e, index) => {
-                  return (
-                    <PostDetail
-                      key={index}
-                      link={e.url}
-                      title={e.title}
-                      description={e.description}
-                      thumbnailUrl={e.thumbnailUrl}
-                    />
-                  );
-                })}
+                {(data.data.top_post == null && displayTop) ||
+                (dataPost == null && displayPost) ? (
+                  <div></div>
+                ) : displayTop ? (
+                  data.data.top_post.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : displayPost ? (
+                  dataPost.data.posts.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : (
+                  <div></div>
+                )}
               </div>
             </div>
           </div>
