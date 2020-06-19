@@ -12,16 +12,15 @@ from datetime import date, timedelta
 import time
 from utils import *
 from dateutil import parser
-from infer_predict import *
-from dateutil import parser
+# from infer_predict import *
 
 PATH_SAVE_CSV = 'crawlVnExp-temp-da.csv'
 
 
 def get_info_topic(id_topic, article_topic):
-    topic = Topic.objects(idTopic=id_topic)
-    if len(topic) != 0:
-        return topic[0]
+    topic = Topic.objects(idTopic=id_topic).first()
+    if topic != None:
+        return topic
 
     url = 'https://vnexpress.net/topic/{articleTopic}-{topicId}'.format(
         articleTopic=article_topic,
@@ -56,17 +55,15 @@ def get_info_tag(list_tag):
     data_tag = get_json_from_url(url)
     tags = []
     for _, item in data_tag['data'].items():
-        tag = Tag.objects(idTag=str(item['tag_id']))
+        tag = Tag.objects(idTag=str(item['tag_id'])).first()
 
-        if len(tag) == 0:
+        if tag == None:
             tag = Tag(
                 idTag=str(item['tag_id']),
                 name=item['tag_name'],
                 url=item['tag_url']
             )
             tag.save()
-        else:
-            tag = tag[0]
 
         tags.append(tag)
 
@@ -74,9 +71,9 @@ def get_info_tag(list_tag):
 
 
 def get_info_post(url, id_post):
-    post = Post.objects(idPost=id_post)
-    if len(post) != 0:
-        return post[0], None, None
+    post = Post.objects(idPost=id_post).first()
+    if post != None:
+        return post, None, None
 
     content = requests.get(url)
     soup = BeautifulSoup(content.text, 'html.parser')
@@ -218,21 +215,25 @@ def get_children_comment(id_post, id_parent):
 
     if 'data' in data_comments \
             and data_comments['data']['total'] > 0 \
-            and dtype(data_comments['data']) is not list:
+            and type(data_comments['data']) is not list:
         for item in data_comments['data']['items']:
-            comment = Comment.objects(idComment=item['comment_id'])
-            if len(comment) == 0:
-                comment = Comment(
-                    idComment=str(item['comment_id']),
-                    comment=item['content'],
-                    createTime=timestamp_to_datetime(item['creation_time']),
-                    userLike=item['userlike']
-                )
-                comment.save()
-            else:
-                comment = comment[0]
+            try:
+                comment = Comment.objects(idComment=item['comment_id']).first()
+                if comment == None:
+                    comment = Comment(
+                        idComment=str(item['comment_id']),
+                        comment=item['content'],
+                        createTime=timestamp_to_datetime(
+                            item['creation_time']),
+                        userLike=item['userlike']
+                    )
+                    comment.save()
 
-            comments.append(comment)
+                comments.append(comment)
+
+            except:
+                print()
+
     return comments
 
 # ! Get parent comment in a post
@@ -248,27 +249,29 @@ def get_comments(id_post):
     if 'data' in data_comments \
             and type(data_comments['data']) is not list:
         for item in data_comments['data']['items']:
-            comment = Comment.objects(idComment=item['comment_id'])
-            if len(comment) == 0:
-                comment = Comment(
-                    idComment=str(item['comment_id']),
-                    comment=item['content'],
-                    createTime=timestamp_to_datetime(item['creation_time']),
-                    userLike=item['userlike']
-                )
-                comment.save()
-            else:
-                comment = comment[0]
+            try:
+                comment = Comment.objects(idComment=item['comment_id']).first()
+                if comment == None:
+                    comment = Comment(
+                        idComment=str(item['comment_id']),
+                        comment=item['content'],
+                        createTime=timestamp_to_datetime(
+                            item['creation_time']),
+                        userLike=item['userlike']
+                    )
+                    comment.save()
 
-            comments.append(comment)
+                comments.append(comment)
 
-            if item['comment_id'] != item['parent_id'] \
-                    and 'replays' in item \
-                    and 'total' in item['replays']:
-                comments.extend(get_children_comment(
-                    id_post,
-                    comment['parent_id']
-                ))
+                if item['comment_id'] != item['parent_id'] \
+                        and 'replays' in item \
+                        and 'total' in item['replays']:
+                    comments.extend(get_children_comment(
+                        id_post,
+                        comment['parent_id']
+                    ))
+            except:
+                print()
 
     return comments
 
@@ -556,17 +559,17 @@ def predict_comment():
 if __name__ == '__main__':
     start = time.time()
 
-    # crawl_all_n_days(0)
+    crawl_all_n_days(40)
     # crawlAllThreeDays()
-    # crawlAllAWeek()
-    # crawlAllAMonth()
-    crawl_all_three_days()
-    predict_comment()
+    # crawl_all_a_week()
+    # crawl_all_a_month()
+    # predict_comment()
 
-    top_topic_in_week()
-    top_topic_in_month()
-    top_tag_in_week()
-    top_tag_in_month()
-
+    # top_topic_in_week()
+    # top_topic_in_month()
+    # top_tag_in_week()
+    # top_tag_in_month()
+    # comment = Comment.objects(idComment="35285047").first()
+    # print(comment)
     end = time.time()
     print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
