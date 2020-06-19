@@ -26,8 +26,8 @@ export const Topic = () => {
   useEffect(() => {
     setLoading(true);
     setErr(false);
-    let one = 'http://127.0.0.1:5000/vnexpress/toptopic';
-    let two = 'http://127.0.0.1:5000/vnexpress/toptag';
+    let one = `${process.env.REACT_APP_LOCAL_URL}vnexpress/toptopic`;
+    let two = `${process.env.REACT_APP_LOCAL_URL}vnexpress/toptag`;
 
     const requestOne = axios.get(one);
     const requestTwo = axios.get(two);
@@ -76,12 +76,12 @@ export const Topic = () => {
 
   /**
    * Get event when click on word, then fetch API with word's id
-   * @param {event} e 
+   * @param {event} e
    */
   const handleChange = (e) => {
     console.log(e);
-    let topicDetail = 'http://127.0.0.1:5000/vnexpress/topicsentiment?idtopic=';
-    let tagDetail = 'http://127.0.0.1:5000/vnexpress/tagsentiment?idtag=';
+    let topicDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/topicsentiment?idtopic=`;
+    let tagDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/tagsentiment?idtag=`;
     setLoading(true);
     setName({ item: e.item, text: e.text });
     axios

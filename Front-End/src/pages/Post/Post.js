@@ -84,7 +84,7 @@ export function Post() {
     if (link !== '') {
       setIsLoaded(true);
       axios
-        .get(`http://127.0.0.1:5000/vnexpress?url=` + link)
+        .get(`${process.env.REACT_APP_LOCAL_URL}vnexpress?url=` + link)
         .then((res) => {
           setData(res.data);
           console.log(res.data);
