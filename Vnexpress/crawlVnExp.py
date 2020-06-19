@@ -560,6 +560,7 @@ if __name__ == '__main__':
     # crawlAllThreeDays()
     # crawlAllAWeek()
     # crawlAllAMonth()
+    crawl_all_three_days()
     predict_comment()
 
     top_topic_in_week()
