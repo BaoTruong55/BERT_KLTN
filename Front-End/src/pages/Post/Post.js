@@ -48,30 +48,43 @@ export function Post() {
   const [value, setValue] = React.useState(0);
   const [search, setSearch] = React.useState(false);
   const [link, setLink] = React.useState('');
-
-  // const [error, setError] = React.useState(null);
   const [isLoaded, setIsLoaded] = React.useState(false);
-  // const [items, setItems] = React.useState([]);
   const [data, setData] = React.useState();
 
+  /**
+   * Change value of tag
+   * @param {*} event Event click
+   * @param {*} newValue value of tab
+   */
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
+  /**
+   * Change index of tag
+   * @param {*} index Index of tag
+   */
   const handleChangeIndex = (index) => {
     setValue(index);
   };
 
+  /**
+   * get value of input 
+   * @param {string} event Event on change
+   */
   const getInput = (event) => {
     console.log(event.target.value);
     setLink(event.target.value);
   };
 
+  /**
+   * get data from link
+   */
   const handleSearch = () => {
     if (link !== '') {
       setIsLoaded(true);
       axios
-        .get(`http://127.0.0.1:5000/vnexpress?url=` + link)
+        .get(`${process.env.REACT_APP_LOCAL_URL}vnexpress?url=` + link)
         .then((res) => {
           setData(res.data);
           console.log(res.data);
@@ -95,12 +108,12 @@ export function Post() {
   } else {
     return (
       <div>
-        <h1 className="h1 title">Post</h1>
+        <h1 className="h1 title">Bài viết</h1>
         <div className="row">
           <div className="col-4 d-flex inputGroup">
             <input
               className="inputSearch input-group-text text-left"
-              placeholder="Post's link"
+              placeholder="Link của bài viết"
               onChange={getInput}
             />
             <Button
@@ -108,33 +121,13 @@ export function Post() {
               variant="contained"
               className="btnSearch"
             >
-              Search
+              Tìm kiếm
             </Button>
           </div>
         </div>
         {search ? (
           <div className="row mt-5">
             <div className="col-md-6 col-sm-12">
-              {/* <div className="row m-0">
-                <div className="col-md-8">
-                  <a
-                    href={link}
-                    target="_blank"
-                    className="link-style"
-                    rel="noopener noreferrer"
-                  >
-                    <h3>{data.title}</h3>
-                  </a>
-                  <p>{data.description}</p>
-                </div>
-                <div className="col-md-4 thumb-art">
-                  <img
-                    src={data.thumbnailUrl}
-                    className="thumb-art_img"
-                    alt=""
-                  />
-                </div>
-              </div> */}
               <PostDetail
                 link={link}
                 title={data.title}
@@ -150,8 +143,8 @@ export function Post() {
                   variant="fullWidth"
                   aria-label="full width tabs example"
                 >
-                  <Tab label="Positive" {...a11yProps(0)} />
-                  <Tab label="Negative" {...a11yProps(1)} />
+                  <Tab label="Tích cực" {...a11yProps(0)} />
+                  <Tab label="Tiêu cực" {...a11yProps(1)} />
                 </Tabs>
               </AppBar>
               <SwipeableViews
@@ -166,7 +159,7 @@ export function Post() {
                         return (
                           <tr key={index}>
                             <th scope="row">{index + 1}</th>
-                            <td>{e.data_text}</td>
+                            <td><div dangerouslySetInnerHTML={{ __html: e.data_text }} /></td>
                           </tr>
                         );
                       })}
@@ -183,7 +176,7 @@ export function Post() {
                     <tbody>
                       {data.commentNeg.map((e, index) => {
                         return (
-                          <tr>
+                          <tr key={index}>
                             <th scope="row">{index + 1}</th>
                             <td>{e.data_text}</td>
                           </tr>
@@ -199,7 +192,10 @@ export function Post() {
                 Biểu đồ thể hiện tỷ lệ Positive và Negative ở trong bài báo.
               </h6>
               <div className="chart">
-                <DonutChart data={[data.pos, data.neg]} />
+                <DonutChart
+                  data={[data.pos, data.neg]}
+                  labels={['Tích cực', 'Tiêu cực']}
+                />
               </div>
             </div>
           </div>

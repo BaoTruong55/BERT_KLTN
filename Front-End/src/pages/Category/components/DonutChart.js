@@ -3,7 +3,7 @@ import { Doughnut } from 'react-chartjs-2';
 
 export const DonutChart = (props) => {
   const data = {
-    labels: ['Pos', 'Neg'],
+    labels: props.labels,
     datasets: [
       {
         data: props.data,

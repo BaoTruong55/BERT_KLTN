@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-# from infer_predict import *
+from infer_predict import *
 from post_crawl import *
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin
@@ -165,12 +165,14 @@ class Vnexpress(Resource):
         df = normalize_data(comments)
         df_result = predict_data(df)
         df_output = DataFrame(df_result, columns=['data_text', 'label'])
-        df_negatives = df_output[df_output['label'] == 0].map(
-            lambda item: item.replace('<br/>', '/n')
-        )
-        df_possitives = df_output[df_output['label'] == 1].map(
-            lambda item: item.replace('<br/>', '/n')
-        )
+        df_negatives = df_output[df_output['label'] == 0]
+        # df_negatives['data_text'] = df_negatives['data_text'].map(
+        #     lambda item: item.replace('<br/>', '/n')
+        # )
+        df_possitives = df_output[df_output['label'] == 1]
+        # df_possitives['data_text'] = df_possitives['data_text'].map(
+        #     lambda item: item.replace('<br/>', '/n')
+        # )
 
         output = {
             "title": title,

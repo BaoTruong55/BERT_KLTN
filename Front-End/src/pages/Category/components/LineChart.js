@@ -6,8 +6,8 @@ export const LineChart = (props) => {
     labels: props.labels,
     datasets: [
       {
-        label: 'Pos',
-        lineTension: 0.5,
+        label: 'Tích cực',
+        lineTension: 0.1,
         backgroundColor: 'rgba(75,192,192,0.4)',
         borderColor: '#FF6384',
         borderCapStyle: 'butt',
@@ -27,8 +27,8 @@ export const LineChart = (props) => {
         data: props.dataPos,
       },
       {
-        label: 'Neg',
-        lineTension: 0.5,
+        label: 'Tiêu cực',
+        lineTension: 0.1,
         backgroundColor: 'rgba(75,192,192,0.4)',
         borderColor: '#FFCE56',
         borderCapStyle: 'butt',
@@ -47,12 +47,67 @@ export const LineChart = (props) => {
         fill: false,
         data: props.dataNeg,
       },
+      {
+        label: 'Số bài viết',
+        lineTension: 0.1,
+        backgroundColor: 'rgba(75,192,192,0.4)',
+        borderColor: '#00945e',
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: '#00945e',
+        pointBackgroundColor: '#fff',
+        pointBorderWidth: 3,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#00945e',
+        pointHoverBorderColor: '#00945e',
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        fill: false,
+        data: props.dataPost,
+      },
     ],
+  };
+
+  const options = {
+    tooltips: {
+      mode: 'x-axis',
+      intersect: false,
+    },
+    scales: {
+      xAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+          gridLines: {
+            display: false,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            maxTicksLimit: 10,
+          },
+          gridLines: {
+            display: true,
+          },
+        },
+      ],
+    },
+  };
+
+  const handleClick = (elems, event) => {
+    // console.log(data.labels[elems[0]._index]);
+    props.onReturnData(data.labels[elems[0]._index])
   };
 
   return (
     <div>
-      <Line data={data} />
+      <Line data={data} options={options} getElementsAtEvent={handleClick} />
     </div>
   );
 };

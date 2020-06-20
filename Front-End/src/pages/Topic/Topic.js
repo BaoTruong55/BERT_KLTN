@@ -1,240 +1,252 @@
 import React, { useEffect, useState } from 'react';
 import './Topic.scss';
-import { makeStyles } from '@material-ui/core/styles';
-import WordCloud from './components/WordCloud';
-import {
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
-  Button,
-  Dialog,
-  DialogActions,
-  Slide,
-  InputAdornment,
-  IconButton,
-  Input,
-} from '@material-ui/core/';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css';
-import { DateRangePicker } from 'react-date-range';
-import { addDays } from 'date-fns';
-import DateRangeIcon from '@material-ui/icons/DateRange';
 import './Topic.scss';
-import { Nodata } from '../Nodata/Nodata';
 import axios from 'axios';
 import { Loading } from '../../shared/Loading/Loading';
-// import axios from 'axios';
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
-const useStyles = makeStyles((theme) => ({
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-}));
+import WordCloud from 'react-d3-cloud';
+import { PostDetail } from '../../shared/PostDetail/PostDetail';
+import { LineChart } from '../Category/components/LineChart';
+import { DonutChart } from '../Category/components/DonutChart';
+import { Nodata } from '../Nodata/Nodata';
 
 export const Topic = () => {
-  // const [topics, setTopics] = useState();
-  const [category, setCategory] = React.useState(0);
-  const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
-  const [convertRange, setConvertRange] = React.useState('');
-  const [filter, setFilter] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [rangePicker, setRangePicker] = React.useState([
-    {
-      startDate: new Date(),
-      endDate: null,
-      key: 'selection',
-    },
-  ]);
-  const [rangeFormat, setRangeFormat] = React.useState({
-    startDate: '',
-    endDate: '',
-  });
+  const [dataTopic, setDataTopic] = useState();
+  const [dataTag, setDataTag] = useState();
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState(false);
+  const [dataDetail, setDataDetail] = useState();
+  const [err, setErr] = useState(false);
+  const [displayTop, setDisplayTop] = React.useState(false);
+  const [displayPost, setDisplayPost] = React.useState(false);
+  const [dataPost, setDataPost] = React.useState();
+  const [name, setName] = useState({ item: '', text: '' });
 
-  let moment = require('moment');
+  /**
+   * fetch data from 2 link
+   */
+  useEffect(() => {
+    setLoading(true);
+    setErr(false);
+    let one = `${process.env.REACT_APP_LOCAL_URL}vnexpress/toptopic`;
+    let two = `${process.env.REACT_APP_LOCAL_URL}vnexpress/toptag`;
 
-  const handleChange = (event) => {
-    setCategory(event.target.value);
-  };
+    const requestOne = axios.get(one);
+    const requestTwo = axios.get(two);
 
-  const handleDialog = () => {
-    setOpen(!open);
+    axios
+      .all([requestOne, requestTwo])
+      .then(
+        axios.spread((...responses) => {
+          const responseOne = responses[0];
+          const responseTwo = responses[1];
+          console.log(responseOne);
+          console.log(responseTwo);
+          setDataTopic(getData(responseOne.data, 'Topic'));
+          setDataTag(getData(responseTwo.data, 'Tag'));
+          setLoading(false);
+        })
+      )
+      .catch((errors) => {
+        console.log('object');
+        setErr(true);
+        setLoading(false);
+        alert('Oops, Something went wrong! Please try again.');
+        console.log(errors);
+      });
+  }, []);
+
+  /**
+   * Format array data and return a new array
+   * @param {Array} res A array data
+   * @param {string} item Type of array data (topic or tag)
+   */
+  function getData(res, item) {
+    return res.map((e) => ({
+      id: e.id,
+      text: e.title,
+      value: e.count_posts,
+      item: item,
+    }));
+  }
+
+  /**
+   * I dont know. I just copy on Stackoverflow
+   * @param {*} word Word in worldCloud
+   */
+  const fontSizeMapper = (word) => Math.log2(word.value) * 5;
+
+  const getReturnData = (e) => {
+    console.log(e);
+    let resData = dataDetail.sentiment_by_date.filter(
+      (elems) => elems.date === e
+    );
+    setDataPost(resData[0]);
+    setDisplayTop(false);
+    setDisplayPost(true);
   };
 
   /**
-   * convert pick time => show time
+   * Get event when click on word, then fetch API with word's id
+   * @param {event} e
    */
-  function convertTime(time) {
-    return moment
-      .utc(time, 'ddd MMM DD YYYY HH:mm:ss ZZ')
-      .add(1, 'days')
-      .format('MM/DD/YYYY');
-  }
-
-  function handleSelect(item) {
-    setRangePicker([item.selection]);
-    let start = convertTime(item.selection.startDate);
-    let end = convertTime(item.selection.endDate);
-    setRangeFormat({
-      startDate: start,
-      endDate: end,
-    });
-    setConvertRange(start + ' - ' + end);
-  }
-
-  const handleFilter = () => {
-    console.log(rangeFormat);
+  const handleChange = (e) => {
+    console.log(e);
+    let topicDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/topicsentiment?idtopic=`;
+    let tagDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/tagsentiment?idtag=`;
     setLoading(true);
-    setFilter(true);
+    setName({ item: e.item, text: e.text });
     axios
-      .get(
-        'http://127.0.0.1:5000/vnexpress/covid?datefrom=' +
-          rangeFormat.startDate +
-          '&dateto=' +
-          rangeFormat.endDate
-      )
+      .get((e.item === 'Topic' ? topicDetail : tagDetail) + e.id)
       .then((res) => {
         console.log(res.data);
-        let labels = [];
-        let dataPos = [];
-        let dataNeg = [];
-        if (res && res.data && res.data.sentiment_by_date) {
-          // setData here
-          setFilter(true);
-          setLoading(false);
-        } else {
-          setFilter(false);
-          setLoading(false);
-          alert('Oops, Something went wrong! Please try again.');
-        }
+        setDataDetail(res.data);
+        setFilter(true);
+        setDisplayTop(true);
+        setDisplayPost(false);
+        setLoading(false);
+        document.getElementById('result').scrollIntoView();
       })
       .catch((err) => {
-        setFilter(false);
-        setLoading(false);
         alert('Oops, Something went wrong! Please try again.');
+        setLoading(true);
         console.log(err);
       });
   };
 
-  const topic = {
-    topics: [
-      {
-        id: '1751295897__Berlin',
-        label: 'Berlin',
-        volume: 165,
-        type: 'topic',
-        sentiment: {
-          negative: 3,
-          neutral: 133,
-          positive: 29,
-        },
-        sentimentScore: 65,
-      },
-      {
-        id: '1751295897__DJ',
-        label: 'DJ',
-        volume: 48,
-        type: 'topic',
-        sentiment: {
-          neutral: 46,
-          positive: 2,
-        },
-        sentimentScore: 54,
-      },
-    ],
-  };
-
-  return (
-    <div>
-      <h1 className="h1 title">Topic</h1>
-      <div className="row">
-        <div className="col-12 d-flex align-items-center">
-          <FormControl className={classes.formControl}>
-            <InputLabel>Categories</InputLabel>
-            <Select value={category} onChange={handleChange}>
-              <MenuItem value={0}>Thế giới</MenuItem>
-              <MenuItem value={1}>Sức khỏe</MenuItem>
-              <MenuItem value={2}>Kinh doanh</MenuItem>
-              <MenuItem value={3}>Thể thao</MenuItem>
-              <MenuItem value={4}>Du lịch</MenuItem>
-              <MenuItem value={5}>Giải trí</MenuItem>
-              <MenuItem value={6}>Cộng đồng</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl className={classes.formControl}>
-            <InputLabel className="" htmlFor="standard-adornment-password">
-              Time
-            </InputLabel>
-            <Input
-              className=""
-              required
-              id="standard-required"
-              label="Required"
-              disabled
-              value={convertRange}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton onClick={handleDialog}>
-                    <DateRangeIcon />
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
-
-          <Dialog
-            open={open}
-            TransitionComponent={Transition}
-            keepMounted
-            onClose={handleDialog}
-            disableEscapeKeyDown
-            disableBackdropClick={true}
-          >
-            <DateRangePicker
-              reditableDateInputs={true}
-              showSelectionPreview={false}
-              onChange={(item) => handleSelect(item)}
-              moveRangeOnFirstSelection={false}
-              ranges={rangePicker}
-              maxDate={addDays(new Date(), 0)}
-              minDate={addDays(new Date(), -30)}
-              dragSelectionEnabled={false}
-            />
-            <DialogActions>
-              <Button onClick={handleDialog} color="primary">
-                Agree
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <Button
-            disabled={convertRange === '' ? true : false}
-            variant="contained"
-            color="primary"
-            className="filterBtn"
-            onClick={handleFilter}
-          >
-            Filter
-          </Button>
-        </div>
-      </div>
-      {/* ----------------------------- Filter -----------------------------*/}
-      {filter ? (
+  if (loading) {
+    return <Loading />;
+  } else if (err) {
+    console.log(err);
+    return <Nodata />;
+  } else {
+    return (
+      <div>
+        <h1 className="h1 title">Chủ đề nổi bật</h1>
         <div className="row">
-          <WordCloud topics={topic.topics} />
+          <div className="col-md-6">
+            <div className="card">
+              <h4 className="card-header">Chủ đề phổ biến</h4>
+              <div className="card-body">
+                <WordCloud
+                  data={dataTopic}
+                  width={1000}
+                  fontSizeMapper={fontSizeMapper}
+                  onWordClick={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="card">
+              <h4 className="card-header">Tag phổ biến</h4>
+              <div className="card-body">
+                <WordCloud
+                  data={dataTag}
+                  width={1000}
+                  fontSizeMapper={fontSizeMapper}
+                  onWordClick={handleChange}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <Nodata />
-      )}
-    </div>
-  );
+        {filter ? (
+          <div id="result" className="mt-5 result-detail">
+            <div className="row mb-3">
+              <div className="col-md-12">
+                <h3>
+                  {name.item}: {name.text}
+                </h3>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6 col-sm 12">
+                <div className="card">
+                  <h4 className="card-header">Tích cực và Tiêu cực</h4>
+                  <div className="card-body">
+                    <DonutChart
+                      data={[dataDetail.total_pos, dataDetail.total_neg]}
+                      labels={['Tích cực', 'Tiêu cực']}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="col-md-6 col-sm 12">
+                <div className="card">
+                  <h4 className="card-header">Phản ứng của xã hội</h4>
+                  <div className="card-body">
+                    <LineChart
+                      onReturnData={getReturnData}
+                      dataPost={dataDetail.sentiment_by_date.map((e) => {
+                        return e.data.count_post;
+                      })}
+                      dataPos={dataDetail.sentiment_by_date.map((e) => {
+                        return e.data.pos;
+                      })}
+                      dataNeg={dataDetail.sentiment_by_date.map((e) => {
+                        return e.data.neg;
+                      })}
+                      labels={dataDetail.sentiment_by_date.map((e) => {
+                        return e.date;
+                      })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-5">
+              {(dataDetail.top_post == null && displayTop) ||
+              (dataPost == null && displayPost) ? (
+                <div>Không có bài viết</div>
+              ) : displayTop ? (
+                <h2>Bài viết tiêu biểu:</h2>
+              ) : displayPost ? (
+                <h2>Bài viết trong ngày {dataPost.date}:</h2>
+              ) : (
+                <div></div>
+              )}
+            </div>
+            <div className="d-flex flex-column align-items-center">
+              <div className="top-post">
+                {(dataDetail.top_post == null && displayTop) ||
+                (dataPost == null && displayPost) ? (
+                  <div></div>
+                ) : displayTop ? (
+                  dataDetail.top_post.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : displayPost ? (
+                  dataPost.data.posts.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : (
+                  <div></div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div></div>
+        )}
+      </div>
+    );
+  }
 };

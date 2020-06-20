@@ -5,3 +5,16 @@
 .component{
   
 }
+
+.covid-table{
+  height: 700px;
+}
+
+.covid-table::-webkit-scrollbar {
+  width: 0px;  /* Remove scrollbar space */
+    background: transparent;
+}
+
+.case-chart{
+  max-height: 30vh;
+}

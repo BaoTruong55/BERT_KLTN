@@ -23,7 +23,6 @@ import { Nodata } from '../Nodata/Nodata';
 import axios from 'axios';
 import { Loading } from '../../shared/Loading/Loading';
 import { PostDetail } from '../../shared/PostDetail/PostDetail';
-
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -44,14 +43,19 @@ export const Category = () => {
   const [convertRange, setConvertRange] = React.useState('');
   const [filter, setFilter] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [displayTop, setDisplayTop] = React.useState(false);
+  const [displayPost, setDisplayPost] = React.useState(false);
+  const [dataPost, setDataPost] = React.useState();
   const [data, setData] = React.useState({
     data: {
+      allData: [],
       labels: [],
       dataPos: [],
       dataNeg: [],
       totalPos: 0,
       totalNeg: 0,
       top_pos: [],
+      countPost: [],
     },
   });
   const [rangePicker, setRangePicker] = React.useState([
@@ -73,7 +77,8 @@ export const Category = () => {
   };
 
   /**
-   * convert pick time => show time
+   * Convert time before Show time on DateRangePicker and return Date MM/DD/YYYY
+   * @param {Date} time ddd MMM DD YYYY HH:mm:ss ZZ
    */
   function convertTime(time) {
     return moment
@@ -82,6 +87,10 @@ export const Category = () => {
       .format('MM/DD/YYYY');
   }
 
+  /**
+   *  Handle date and time, then setRangeFormat and setConvertRange
+   * @param {Date} item DateRangePicker
+   */
   function handleSelect(item) {
     setRangePicker([item.selection]);
     let start = convertTime(item.selection.startDate);
@@ -93,13 +102,24 @@ export const Category = () => {
     setConvertRange(start + ' - ' + end);
   }
 
+  const getReturnData = (e) => {
+    console.log(e);
+    let resData = data.data.allData.filter((elems) => elems.date === e);
+    setDataPost(resData[0]);
+    setDisplayTop(false);
+    setDisplayPost(true);
+  };
+
+  /**
+   * fetch data from post's link
+   */
   const handleFilter = () => {
     console.log(rangeFormat);
     setLoading(true);
     setFilter(true);
     axios
       .get(
-        'http://127.0.0.1:5000/vnexpress/covid?datefrom=' +
+        `${process.env.REACT_APP_LOCAL_URL}vnexpress/covid?datefrom=` +
           rangeFormat.startDate +
           '&dateto=' +
           rangeFormat.endDate
@@ -128,15 +148,21 @@ export const Category = () => {
           setData({
             ...data,
             data: {
+              allData: res.data.sentiment_by_date,
               labels: labels,
               dataPos: dataPos,
               dataNeg: dataNeg,
               totalPos: res.data.total_pos,
               totalNeg: res.data.total_neg,
               top_post: top_post,
+              countPost: res.data.sentiment_by_date.map((e) => {
+                return e.data.count_post;
+              }),
             },
           });
           setFilter(true);
+          setDisplayTop(true);
+          setDisplayPost(false);
           setLoading(false);
         } else {
           setFilter(false);
@@ -158,12 +184,12 @@ export const Category = () => {
     return (
       <div>
         {/* ------------------------------------------------------------------------------------------------ */}
-        <h1 className="h1 title">Reaction of society</h1>
+        <h1 className="h1 title">Phản ứng của xã hội</h1>
         <div className="row">
           <div className="col-12 d-flex align-items-center">
             <FormControl className={classes.formControl}>
               <InputLabel className="" htmlFor="standard-adornment-password">
-                Time
+                Thời gian
               </InputLabel>
               <Input
                 className=""
@@ -202,7 +228,7 @@ export const Category = () => {
               />
               <DialogActions>
                 <Button onClick={handleDialog} color="primary">
-                  Agree
+                  Đồng ý
                 </Button>
               </DialogActions>
             </Dialog>
@@ -213,7 +239,7 @@ export const Category = () => {
               className="filterBtn"
               onClick={handleFilter}
             >
-              Filter
+              Lọc
             </Button>
           </div>
         </div>
@@ -223,22 +249,25 @@ export const Category = () => {
             <div className="row">
               <div className="col-md-6 col-sm 12">
                 <div className="card">
-                  <h4 className="card-header">Pos and Neg</h4>
+                  <h4 className="card-header">Tích cực và Tiêu cực</h4>
                   <div className="card-body">
                     {console.log(data.data.totalPos)}
                     <DonutChart
                       data={[data.data.totalPos, data.data.totalNeg]}
+                      labels={['Tích cực', 'Tiêu cực']}
                     />
                   </div>
                 </div>
               </div>
               <div className="col-md-6 col-sm 12">
                 <div className="card">
-                  <h4 className="card-header">Reaction of society</h4>
+                  <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">
                     <LineChart
+                      onReturnData={getReturnData}
                       dataPos={data.data.dataPos}
                       dataNeg={data.data.dataNeg}
+                      dataPost={data.data.countPost}
                       labels={data.data.labels}
                     />
                   </div>
@@ -246,23 +275,51 @@ export const Category = () => {
               </div>
             </div>
             <div className="mt-5">
-              <h2>Top post:</h2>
+              {(data.data.top_post == null && displayTop) ||
+              (dataPost == null && displayPost) ? (
+                <div>Không có bài viết</div>
+              ) : displayTop ? (
+                <h2>Bài viết tiêu biểu:</h2>
+              ) : displayPost ? (
+                <h2>Bài viết trong ngày {dataPost.date}:</h2>
+              ) : (
+                <div></div>
+              )}
             </div>
             <div className="d-flex flex-column align-items-center">
               <div className="top-post">
-              {data.data.top_post.map((e, index) => {
-                return (
-                  <PostDetail
-                    link={e.url}
-                    title={e.title}
-                    description={e.description}
-                    thumbnailUrl={e.thumbnailUrl}
-                  />
-                );
-              })}
+                {(data.data.top_post == null && displayTop) ||
+                (dataPost == null && displayPost) ? (
+                  <div></div>
+                ) : displayTop ? (
+                  data.data.top_post.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : displayPost ? (
+                  dataPost.data.posts.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : (
+                  <div></div>
+                )}
+              </div>
             </div>
-            </div>
-            
           </div>
         ) : (
           <Nodata />
