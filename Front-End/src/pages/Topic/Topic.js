@@ -18,6 +18,9 @@ export const Topic = () => {
   const [filter, setFilter] = useState(false);
   const [dataDetail, setDataDetail] = useState();
   const [err, setErr] = useState(false);
+  const [displayTop, setDisplayTop] = React.useState(false);
+  const [displayPost, setDisplayPost] = React.useState(false);
+  const [dataPost, setDataPost] = React.useState();
   const [name, setName] = useState({ item: '', text: '' });
 
   /**
@@ -74,6 +77,16 @@ export const Topic = () => {
    */
   const fontSizeMapper = (word) => Math.log2(word.value) * 5;
 
+  const getReturnData = (e) => {
+    console.log(e);
+    let resData = dataDetail.sentiment_by_date.filter(
+      (elems) => elems.date === e
+    );
+    setDataPost(resData[0]);
+    setDisplayTop(false);
+    setDisplayPost(true);
+  };
+
   /**
    * Get event when click on word, then fetch API with word's id
    * @param {event} e
@@ -90,6 +103,8 @@ export const Topic = () => {
         console.log(res.data);
         setDataDetail(res.data);
         setFilter(true);
+        setDisplayTop(true);
+        setDisplayPost(false);
         setLoading(false);
         document.getElementById('result').scrollIntoView();
       })
@@ -163,6 +178,10 @@ export const Topic = () => {
                   <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">
                     <LineChart
+                      onReturnData={getReturnData}
+                      dataPost={dataDetail.sentiment_by_date.map((e) => {
+                        return e.data.count_post;
+                      })}
                       dataPos={dataDetail.sentiment_by_date.map((e) => {
                         return e.data.pos;
                       })}
@@ -178,21 +197,49 @@ export const Topic = () => {
               </div>
             </div>
             <div className="mt-5">
-              <h2>Bài viết tiêu biểu:</h2>
+              {(dataDetail.top_post == null && displayTop) ||
+              (dataPost == null && displayPost) ? (
+                <div>Không có bài viết</div>
+              ) : displayTop ? (
+                <h2>Bài viết tiêu biểu:</h2>
+              ) : displayPost ? (
+                <h2>Bài viết trong ngày {dataPost.date}:</h2>
+              ) : (
+                <div></div>
+              )}
             </div>
             <div className="d-flex flex-column align-items-center">
               <div className="top-post">
-                {dataDetail.top_post.map((e, index) => {
-                  return (
-                    <PostDetail
-                      key={index}
-                      link={e.url}
-                      title={e.title}
-                      description={e.description}
-                      thumbnailUrl={e.thumbnailUrl}
-                    />
-                  );
-                })}
+                {(dataDetail.top_post == null && displayTop) ||
+                (dataPost == null && displayPost) ? (
+                  <div></div>
+                ) : displayTop ? (
+                  dataDetail.top_post.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : displayPost ? (
+                  dataPost.data.posts.map((e, index) => {
+                    return (
+                      <PostDetail
+                        key={index}
+                        link={e.url}
+                        title={e.title}
+                        description={e.description}
+                        thumbnailUrl={e.thumbnailUrl}
+                      />
+                    );
+                  })
+                ) : (
+                  <div></div>
+                )}
               </div>
             </div>
           </div>
