@@ -1,0 +1,14 @@
+Flask-PyMongo==2.2.0
+DateTime==4.3
+Flask==1.1.2
+Flask-Cors==3.0.8
+Flask-RESTful==0.3.8
+requests==2.22.0
+beautifulsoup4==4.8.2
+urllib3==1.25.8
+mongoengine==0.20.0
+python-dateutil==2.7.3
+
+
+
+

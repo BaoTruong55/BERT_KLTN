@@ -10,11 +10,14 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime, date, timedelta
 from dateutil import parser
 import time
+import os
 
 # TODO ==== Main ===============================================================
-app = Flask(__name__)
-CORS(app)
-api = Api(app)
+application = Flask(__name__)
+CORS(application)
+api = Api(application)
+
+SUB_URL = os.environ.get("SUB_URL", '/vnexpress')
 
 
 def IS_LABEL_NEG(item): return item.label == 0
@@ -342,14 +345,17 @@ class TopicSentiment(Resource):
         return Response(json.dumps(result), mimetype='application/json')
 
 
-api.add_resource(Vnexpress, '/vnexpress')
-api.add_resource(Covid, '/vnexpress/covid')
-api.add_resource(TopTags, '/vnexpress/toptag')
-api.add_resource(TopTopics, '/vnexpress/toptopic')
-api.add_resource(Categories, '/vnexpress/categories')
-api.add_resource(TagSentiment, '/vnexpress/tagsentiment')
-api.add_resource(TopicSentiment, '/vnexpress/topicsentiment')
-api.add_resource(CategorySentiment, '/vnexpress/categorysentiment')
+api.add_resource(Vnexpress, SUB_URL)
+api.add_resource(Covid, SUB_URL + '/covid')
+api.add_resource(TopTags, SUB_URL + '/toptag')
+api.add_resource(TopTopics, SUB_URL + '/toptopic')
+api.add_resource(Categories, SUB_URL + '/categories')
+api.add_resource(TagSentiment, SUB_URL + '/tagsentiment')
+api.add_resource(TopicSentiment, SUB_URL + 'topicsentiment')
+api.add_resource(CategorySentiment, SUB_URL + '/categorysentiment')
 
 if __name__ == '__main__':
-    app.run()
+    ENVIRONMENT_DEBUG = os.environ.get("APP_DEBUG", True)
+    ENVIRONMENT_PORT = os.environ.get("APP_PORT", 5000)
+    application.run(host='0.0.0.0', port=ENVIRONMENT_PORT,
+                    debug=ENVIRONMENT_DEBUG)

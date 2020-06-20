@@ -1,8 +1,27 @@
-
+import os
 from mongoengine import *
 import datetime
 
-connect('vnexpress', host='localhost', port=27017,  alias='db')
+MONGODB_DATABASE = os.environ.get("MONGODB_DATABASE", 'vnexpress')
+MONGODB_USERNAME = os.environ.get("MONGODB_USERNAME", '')
+MONGODB_PASSWORD = os.environ.get("MONGODB_PASSWORD", '')
+MONGODB_HOSTNAME = os.environ.get("MONGODB_HOSTNAME", 'localhost')
+
+if MONGODB_USERNAME != '' and MONGODB_PASSWORD != '':
+    connect(
+        db=MONGODB_DATABASE,
+        username=MONGODB_USERNAME,
+        password=MONGODB_PASSWORD,
+        host=MONGODB_HOSTNAME,
+        alias='db'
+    )
+else:
+    connect(
+        db=MONGODB_DATABASE,
+        host=MONGODB_HOSTNAME,
+        port=27017,
+        alias='db'
+    )
 
 
 class Comment(Document):
@@ -80,4 +99,3 @@ class Category(Document):
     description = StringField(required=False)
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
-
