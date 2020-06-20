@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-from infer_predict import *
+# from infer_predict import *
 from post_crawl import *
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin
@@ -235,7 +235,7 @@ class TopTags(Resource):
         tags = list(map(
             lambda item: {
                 "id": item.idTag,
-                "title": "-".join(item.name.split('-')[:-1]),
+                "title": item.name,
                 "url": item.url,
                 "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
                 # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
