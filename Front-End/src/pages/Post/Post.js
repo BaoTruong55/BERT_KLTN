@@ -127,7 +127,7 @@ export function Post() {
         </div>
         {search ? (
           <div className="row mt-5">
-            <div className="col-md-6 col-sm-12">
+            <div className="col-md-6 col-sm-12 mr-b">
               <PostDetail
                 link={link}
                 title={data.title}

@@ -102,7 +102,7 @@ export const LineChart = (props) => {
 
   const handleClick = (elems, event) => {
     console.log(elems);
-    if (elems.length != 0) {
+    if (elems.length !== 0) {
       props.onReturnData(data.labels[elems[0]._index]);
     }
   };
