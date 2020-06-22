@@ -80,7 +80,7 @@ export const LineChart = (props) => {
       xAxes: [
         {
           ticks: {
-            maxTicksLimit: 10,
+            maxTicksLimit: 5,
           },
           gridLines: {
             display: false,
@@ -90,7 +90,7 @@ export const LineChart = (props) => {
       yAxes: [
         {
           ticks: {
-            maxTicksLimit: 10,
+            maxTicksLimit: 5,
           },
           gridLines: {
             display: true,
@@ -101,8 +101,10 @@ export const LineChart = (props) => {
   };
 
   const handleClick = (elems, event) => {
-    // console.log(data.labels[elems[0]._index]);
-    props.onReturnData(data.labels[elems[0]._index])
+    console.log(elems);
+    if (elems.length != 0) {
+      props.onReturnData(data.labels[elems[0]._index]);
+    }
   };
 
   return (

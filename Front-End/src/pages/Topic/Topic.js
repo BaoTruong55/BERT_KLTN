@@ -22,6 +22,7 @@ export const Topic = () => {
   const [displayPost, setDisplayPost] = React.useState(false);
   const [dataPost, setDataPost] = React.useState();
   const [name, setName] = useState({ item: '', text: '' });
+  const [wcWidth, setWcWidth] = useState(0);
 
   /**
    * fetch data from 2 link
@@ -41,15 +42,18 @@ export const Topic = () => {
         axios.spread((...responses) => {
           const responseOne = responses[0];
           const responseTwo = responses[1];
-          console.log(responseOne);
-          console.log(responseTwo);
+          // console.log(responseOne);
+          // console.log(responseTwo);
           setDataTopic(getData(responseOne.data, 'Topic'));
           setDataTag(getData(responseTwo.data, 'Tag'));
+          window.innerWidth > 1000
+            ? setWcWidth((window.innerWidth / 2 - 60) | 0)
+            : setWcWidth(window.innerWidth - 60);
           setLoading(false);
         })
       )
       .catch((errors) => {
-        console.log('object');
+        // console.log('object');
         setErr(true);
         setLoading(false);
         alert('Oops, Something went wrong! Please try again.');
@@ -78,7 +82,7 @@ export const Topic = () => {
   const fontSizeMapper = (word) => Math.log2(word.value) * 5;
 
   const getReturnData = (e) => {
-    console.log(e);
+    // console.log(e);
     let resData = dataDetail.sentiment_by_date.filter(
       (elems) => elems.date === e
     );
@@ -92,7 +96,7 @@ export const Topic = () => {
    * @param {event} e
    */
   const handleChange = (e) => {
-    console.log(e);
+    // console.log(e);
     let topicDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/topicsentiment?idtopic=`;
     let tagDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/tagsentiment?idtag=`;
     setLoading(true);
@@ -100,7 +104,7 @@ export const Topic = () => {
     axios
       .get((e.item === 'Topic' ? topicDetail : tagDetail) + e.id)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         setDataDetail(res.data);
         setFilter(true);
         setDisplayTop(true);
@@ -118,36 +122,39 @@ export const Topic = () => {
   if (loading) {
     return <Loading />;
   } else if (err) {
-    console.log(err);
     return <Nodata />;
   } else {
     return (
       <div>
         <h1 className="h1 title">Chủ đề nổi bật</h1>
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-md-6 mr-b">
             <div className="card">
               <h4 className="card-header">Chủ đề phổ biến</h4>
               <div className="card-body">
-                <WordCloud
-                  data={dataTopic}
-                  width={1000}
-                  fontSizeMapper={fontSizeMapper}
-                  onWordClick={handleChange}
-                />
+                <div className="w-cloud">
+                  <WordCloud
+                    data={dataTopic}
+                    width={wcWidth}
+                    fontSizeMapper={fontSizeMapper}
+                    onWordClick={handleChange}
+                  />
+                </div>
               </div>
             </div>
           </div>
-          <div className="col-md-6">
+          <div className="col-md-6 mr-b">
             <div className="card">
-              <h4 className="card-header">Tag phổ biến</h4>
-              <div className="card-body">
-                <WordCloud
-                  data={dataTag}
-                  width={1000}
-                  fontSizeMapper={fontSizeMapper}
-                  onWordClick={handleChange}
-                />
+              <h4 className="card-header">Nhãn phổ biến</h4>
+              <div className="card-body word-cloud">
+                <div>
+                  <WordCloud
+                    data={dataTag}
+                    width={wcWidth}
+                    fontSizeMapper={fontSizeMapper}
+                    onWordClick={handleChange}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -162,7 +169,7 @@ export const Topic = () => {
               </div>
             </div>
             <div className="row">
-              <div className="col-md-6 col-sm 12">
+              <div className="col-md-6 col-sm 12 mr-b">
                 <div className="card">
                   <h4 className="card-header">Tích cực và Tiêu cực</h4>
                   <div className="card-body">
@@ -173,7 +180,7 @@ export const Topic = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-md-6 col-sm 12">
+              <div className="col-md-6 col-sm 12 mr-b">
                 <div className="card">
                   <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">

@@ -247,7 +247,7 @@ export const Category = () => {
         {filter ? (
           <div className="mt-5">
             <div className="row">
-              <div className="col-md-6 col-sm 12">
+              <div className="col-md-6 col-sm 12 mr-b">
                 <div className="card">
                   <h4 className="card-header">Tích cực và Tiêu cực</h4>
                   <div className="card-body">
@@ -259,7 +259,7 @@ export const Category = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-md-6 col-sm 12">
+              <div className="col-md-6 col-sm 12 mr-b">
                 <div className="card">
                   <h4 className="card-header">Phản ứng của xã hội</h4>
                   <div className="card-body">

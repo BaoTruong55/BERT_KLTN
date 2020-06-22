@@ -1,11 +1,11 @@
 .inputSearch {
-  width: 30%;
+  width: 15%;
   border-radius: 20px 0 0 20px;
   border-right: none;
   transition: width 1s;
   &:focus {
     outline: none;
-    width: 85%;
+    width: 30%;
   }
 }
 .btnSearch {

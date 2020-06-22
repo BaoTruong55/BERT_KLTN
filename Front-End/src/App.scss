@@ -1,0 +1,75 @@
+.geo-chart{
+    width: 100%;
+    // height: 50vh;
+}
+.word-cloud{
+    width: 100%;
+}
+// Responsive full-hd
+@media screen and (max-width: 2500px) {
+  .top-post {
+    max-width: 20vw;
+  }
+
+  .inputSearch {
+    width: 15%;
+    border-radius: 20px 0 0 20px;
+    border-right: none;
+    transition: width 1s;
+    &:focus {
+      outline: none;
+      width: 30%;
+    }
+  }
+  .btnSearch {
+    border-radius: 0 20px 20px 0 !important;
+    box-shadow: none !important;
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+    border-left: none !important;
+    font-weight: bold !important;
+    color: rgba(255, 92, 0, 0.83) !important;
+    &:focus {
+      outline: none !important;
+    }
+  }
+
+}
+
+// Responsive Iphone
+@media screen and (max-width: 480px) {
+  .top-post {
+    max-width: 100vw;
+  }
+  .mr-b{
+      margin-bottom: 15px;
+  }
+
+  .inputSearch {
+    width: 15%;
+    border-radius: 20px 0 0 20px;
+    border-right: none;
+    transition: width 1s;
+    &:focus {
+      outline: none;
+      width: 71%;
+    }
+  }
+  .btnSearch {
+    border-radius: 0 20px 20px 0 !important;
+    box-shadow: none !important;
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+    border-left: none !important;
+    font-weight: bold !important;
+    color: rgba(255, 92, 0, 0.83) !important;
+    &:focus {
+      outline: none !important;
+    }
+  }
+
+  .covid-table{
+    height: 500px;
+  }
+
+}

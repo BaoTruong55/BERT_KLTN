@@ -43,6 +43,7 @@ export default function NavTabs() {
 
   return (
     <Router>
+      
       <div>
         <AppBar position="static" color="default">
           <Tabs

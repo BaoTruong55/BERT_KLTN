@@ -110,7 +110,7 @@ export function Post() {
       <div>
         <h1 className="h1 title">Bài viết</h1>
         <div className="row">
-          <div className="col-4 d-flex inputGroup">
+          <div className="col-12 d-flex inputGroup">
             <input
               className="inputSearch input-group-text text-left"
               placeholder="Link của bài viết"
