@@ -30,8 +30,8 @@ export const Topic = () => {
   useEffect(() => {
     setLoading(true);
     setErr(false);
-    let one = `${process.env.REACT_APP_LOCAL_URL}vnexpress/toptopic`;
-    let two = `${process.env.REACT_APP_LOCAL_URL}vnexpress/toptag`;
+    let one = `${process.env.REACT_APP_API_BASE_URL}vnexpress/toptopic`;
+    let two = `${process.env.REACT_APP_API_BASE_URL}vnexpress/toptag`;
 
     const requestOne = axios.get(one);
     const requestTwo = axios.get(two);
@@ -97,8 +97,8 @@ export const Topic = () => {
    */
   const handleChange = (e) => {
     // console.log(e);
-    let topicDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/topicsentiment?idtopic=`;
-    let tagDetail = `${process.env.REACT_APP_LOCAL_URL}vnexpress/tagsentiment?idtag=`;
+    let topicDetail = `${process.env.REACT_APP_API_BASE_URL}vnexpress/topicsentiment?idtopic=`;
+    let tagDetail = `${process.env.REACT_APP_API_BASE_URL}vnexpress/tagsentiment?idtag=`;
     setLoading(true);
     setName({ item: e.item, text: e.text });
     axios

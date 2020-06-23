@@ -119,7 +119,7 @@ export const Category = () => {
     setFilter(true);
     axios
       .get(
-        `${process.env.REACT_APP_LOCAL_URL}vnexpress/covid?datefrom=` +
+        `${process.env.REACT_APP_API_BASE_URL}vnexpress/covid?datefrom=` +
           rangeFormat.startDate +
           '&dateto=' +
           rangeFormat.endDate
