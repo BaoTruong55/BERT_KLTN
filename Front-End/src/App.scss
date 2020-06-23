@@ -6,7 +6,24 @@
   width: 100%;
 }
 // Responsive full-hd
-@media screen and (max-width: 2500px) {
+@media screen and (max-width: 2200px) {
+  .title-homepage {
+    .title-homepage_Sa {
+      font-size: 70px;
+    }
+    .title-homepage_comment {
+      font-size: 44px;
+      text-align: right;
+      line-height: 1;
+    }
+    .title-homepage_covid {
+      text-align: left;
+      font-size: 100px;
+      color: #ee383b;
+      line-height: 1;
+    }
+  }
+
   .top-post {
     max-width: 50vw;
   }
@@ -28,15 +45,84 @@
     border: 1px solid #ced4da !important;
     border-left: none !important;
     font-weight: bold !important;
-    color: rgba(255, 92, 0, 0.83) !important;
+    color: #ee383b !important;
     &:focus {
       outline: none !important;
     }
   }
 }
 
+@media screen and (max-width: 1500px) {
+  .title-homepage {
+    .title-homepage_Sa {
+      font-size: 45px;
+    }
+    .title-homepage_comment {
+      font-size: 25px;
+      text-align: right;
+    }
+    .title-homepage_covid {
+      text-align: left;
+      font-size: 60px;
+      color: #ee383b;
+    }
+  }
+  .description {
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 1250px) {
+  .homepage {
+    height: 100%;
+    .title-homepage {
+      width: 100%;
+      .title-homepage_Sa {
+        font-size: 35px;
+      }
+      .title-homepage_comment {
+        font-size: 20px;
+        text-align: right;
+      }
+      .title-homepage_covid {
+        text-align: left;
+        font-size: 55px;
+        color: #ee383b;
+      }
+    }
+    .description {
+      font-size: 10px;
+    }
+  }
+}
+
 // Responsive Iphone
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 700px) {
+  .title-homepage {
+    .title-homepage_Sa {
+      font-size: 10px;
+    }
+    .title-homepage_comment {
+      font-size: 25px;
+      text-align: right;
+    }
+    .title-homepage_covid {
+      text-align: left;
+      font-size: 60px;
+      color: #ee383b;
+    }
+  }
+  .description {
+    font-size: 13px;
+  }
+  
+  .no-data-img {
+    width: 100vw;
+  }
+  .title {
+    font-size: 30px;
+  }
+
   .component {
     overflow-y: scroll;
     scrollbar-width: none; /* Firefox */
@@ -70,7 +156,7 @@
     border: 1px solid #ced4da !important;
     border-left: none !important;
     font-weight: bold !important;
-    color: rgba(255, 92, 0, 0.83) !important;
+    color: #ee383b !important;
     &:focus {
       outline: none !important;
     }

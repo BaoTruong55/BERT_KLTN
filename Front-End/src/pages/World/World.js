@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './World.scss';
-import { ComfirmedCaseChart } from './Components/ComfirmedCaseChart';
+import { ConfirmedCaseChart } from './Components/ConfirmedCaseChart';
 import { CasesChart } from './Components/Cases';
 import { GeoChart } from '../../shared/GeoChart/GeoChart';
 import axios from 'axios';
@@ -33,7 +33,7 @@ export const World = () => {
       await axios
         .get('https://gw.vnexpress.net/cr/?name=tracker_coronavirus')
         .then((res) => {
-          console.log(res.data.data);
+          // console.log(res.data.data);
 
           if (res.data && res.data.data && res.data.data.data[0]) {
             let tracker_by_province = res.data.data.data[0].tracker_by_province;
@@ -97,7 +97,7 @@ export const World = () => {
           console.log(err);
         });
     }
-    fetchMyAPI();
+     fetchMyAPI();
   }, []);
 
   if (loading) {
@@ -203,8 +203,7 @@ export const World = () => {
                 <div className="card">
                   <h4 className="card-header">Tổng số ca</h4>
                   <div className="card-body">
-                    {console.log(dataChart.totalCases)}
-                    <ComfirmedCaseChart
+                    <ConfirmedCaseChart
                       labels={dataChart.growthName}
                       data1={dataChart.totalCases}
                       data2={dataChart.recoveredCases}
