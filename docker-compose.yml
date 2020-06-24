@@ -1,22 +1,5 @@
 version: '3'
 services:
-    mongodb:
-        image: mongo:4.0.8
-        container_name: mongodb
-        restart: unless-stopped
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: imlong
-            MONGO_INITDB_ROOT_PASSWORD: 123456
-            MONGO_INITDB_DATABASE: vnexpress
-            MONGODB_DATA_DIR: /data/db
-            MONDODB_LOG_DIR: /dev/null
-        ports:
-            - 27017:27017
-        volumes:
-            - mongodbdata:/data/db
-        networks:
-            - appnetworks
-
     server:
         build:
             context: Vnexpress
@@ -32,13 +15,11 @@ services:
             MONGODB_DATABASE: vnexpress
             MONGODB_USERNAME: imlong
             MONGODB_PASSWORD: 123456
-            MONGODB_HOSTNAME: mongodb
+            MONGODB_HOSTNAME: localhost
         ports:
             - "5000:5000"
         volumes:
             - serverdata:/var/www
-        depends_on:
-            - mongodb
         networks:
             - appnetworks
 
@@ -88,8 +69,6 @@ networks:
         driver: bridge
 
 volumes:
-    mongodbdata:
-        driver: local
     serverdata:
         driver: local
     clientdata:

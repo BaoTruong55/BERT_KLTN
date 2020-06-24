@@ -13,6 +13,7 @@ if MONGODB_USERNAME != '' and MONGODB_PASSWORD != '':
         username=MONGODB_USERNAME,
         password=MONGODB_PASSWORD,
         host=MONGODB_HOSTNAME,
+        port=27017,
         alias='db'
     )
 else:

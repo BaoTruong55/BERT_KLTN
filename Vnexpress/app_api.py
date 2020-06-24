@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-# from infer_predict import *
+from infer_predict import *
 from post_crawl import *
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin
@@ -166,13 +166,7 @@ class Vnexpress(Resource):
         df_result = predict_data(df)
         df_output = DataFrame(df_result, columns=['data_text', 'label'])
         df_negatives = df_output[df_output['label'] == 0]
-        # df_negatives['data_text'] = df_negatives['data_text'].map(
-        #     lambda item: item.replace('<br/>', '/n')
-        # )
         df_possitives = df_output[df_output['label'] == 1]
-        # df_possitives['data_text'] = df_possitives['data_text'].map(
-        #     lambda item: item.replace('<br/>', '/n')
-        # )
 
         output = {
             "title": title,
@@ -184,8 +178,10 @@ class Vnexpress(Resource):
             "commentNeg": df_negatives.to_dict("records")
         }
 
-        result = Response(json.dumps(output), mimetype='application/json')
-        return result
+        return Response(
+            json.dumps(output),
+            mimetype='application/json'
+        )
 
 
 class Covid(Resource):
@@ -205,7 +201,10 @@ class Covid(Resource):
             "top_post": top_post,
             "sentiment_by_date": sentiment_by_date
         }
-        return Response(json.dumps(result), mimetype='application/json')
+        return Response(
+            json.dumps(result),
+            mimetype='application/json'
+        )
 
 
 class TopTopics(Resource):
@@ -219,12 +218,19 @@ class TopTopics(Resource):
                 "id": item.idTopic,
                 "title": "-".join(item.title.split('-')[:-1]),
                 "description": item.description,
-                "count_posts": len(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo)),
-                # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_neg']),
-                # "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_topic.dateFrom, top_topic.dateTo))['comments_pos'])
+                "count_posts": len(
+                    filter_posts_by_date(
+                        item.posts,
+                        top_topic.dateFrom,
+                        top_topic.dateTo
+                    )
+                ),
             }, top_topic.topics
         ))
-        return Response(json.dumps(topics), mimetype='application/json')
+        return Response(
+            json.dumps(topics),
+            mimetype='application/json'
+        )
 
 
 class TopTags(Resource):
@@ -237,17 +243,33 @@ class TopTags(Resource):
                 "id": item.idTag,
                 "title": item.name,
                 "url": item.url,
-                "count_posts": len(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo)),
-                # "neg": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_neg']),
-                # "pos": len(sentiment_in_posts(filter_posts_by_date(item.posts, top_tag.dateFrom, top_tag.dateTo))['comments_pos'])
+                "count_posts": len(
+                    filter_posts_by_date(
+                        item.posts,
+                        top_tag.dateFrom,
+                        top_tag.dateTo
+                    )
+                ),
             }, top_tag.tags
         ))
-        return Response(json.dumps(tags), mimetype='application/json')
+        return Response(
+            json.dumps(tags),
+            mimetype='application/json'
+        )
 
 
 class Categories(Resource):
     def get(self):
         category = Category.objects()
+
+        if category == None:
+            return Response(
+                json.dumps(
+                    {"error": "current can not get category!"}
+                ),
+                mimetype='application/json'
+            )
+
         listCategory = list(map(
             lambda item: {
                 "idCategory": item.idCategory,
@@ -256,7 +278,10 @@ class Categories(Resource):
             },
             category
         ))
-        return Response(json.dumps(listCategory), mimetype='application/json')
+        return Response(
+            json.dumps(listCategory),
+            mimetype='application/json'
+        )
 
 
 class CategorySentiment(Resource):
@@ -277,7 +302,10 @@ class CategorySentiment(Resource):
             "top_post": top_post,
             "sentiment_by_date": sentiment_by_date
         }
-        return Response(json.dumps(result), mimetype='application/json')
+        return Response(
+            json.dumps(result),
+            mimetype='application/json'
+        )
 
 
 class TagSentiment(Resource):
@@ -286,6 +314,14 @@ class TagSentiment(Resource):
         top_tag = TopTag.objects(
             unitTime='month'
         ).order_by('-created').first()
+
+        if top_tag == None:
+            return Response(
+                json.dumps(
+                    {"error": "current can not get top tag!"}
+                ),
+                mimetype='application/json'
+            )
 
         if request.args.get('dateto') != None:
             date_to = request.args.get('dateto')
@@ -310,7 +346,10 @@ class TagSentiment(Resource):
             "top_post": top_post,
             "sentiment_by_date": sentiment_by_date
         }
-        return Response(json.dumps(result), mimetype='application/json')
+        return Response(
+            json.dumps(result),
+            mimetype='application/json'
+        )
 
 
 class TopicSentiment(Resource):
@@ -320,6 +359,14 @@ class TopicSentiment(Resource):
         top_topic = TopTopic.objects(
             unitTime='month'
         ).order_by('-created').first()
+
+        if top_topic == None:
+            return Response(
+                json.dumps(
+                    {"error": "current can not get top topic!"}
+                ),
+                mimetype='application/json'
+            )
 
         if request.args.get('dateto') != None:
             date_to = request.args.get('dateto')
@@ -344,7 +391,10 @@ class TopicSentiment(Resource):
             "top_post": top_post,
             "sentiment_by_date": sentiment_by_date
         }
-        return Response(json.dumps(result), mimetype='application/json')
+        return Response(
+            json.dumps(result),
+            mimetype='application/json'
+        )
 
 
 api.add_resource(Vnexpress, SUB_URL)
@@ -359,5 +409,8 @@ api.add_resource(CategorySentiment, SUB_URL + '/categorysentiment')
 if __name__ == '__main__':
     ENVIRONMENT_DEBUG = os.environ.get("APP_DEBUG", True)
     ENVIRONMENT_PORT = os.environ.get("APP_PORT", 5000)
-    application.run(host='0.0.0.0', port=ENVIRONMENT_PORT,
-                    debug=ENVIRONMENT_DEBUG)
+    application.run(
+        host='0.0.0.0',
+        port=ENVIRONMENT_PORT,
+        debug=ENVIRONMENT_DEBUG
+    )
