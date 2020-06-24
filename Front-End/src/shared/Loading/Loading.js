@@ -48,8 +48,6 @@ export const Loading = () => {
 
     return () => {};
   }, []);
-
-  // //   restart.addEventListener('click', () => logoAnimation.restart());
   return (
     <div className="d-flex justify-content-center align-items-center Loading">
       <div className="site-logo">
@@ -69,7 +67,7 @@ export const Loading = () => {
             </defs>
             <polygon
               id="logo-hexagon"
-              fill="red"
+              fill="#ee383b"
               points="64 128 8.574 96 8.574 32 64 0 119.426 32 119.426 96"
               mask="url(#circle-mask)"
             ></polygon>
