@@ -6,7 +6,7 @@ export const Nodata = () => {
   return (
     <div className=" noData">
       <div className="d-flex justify-content-center">
-        <img alt="" src={NodataImg}></img>
+        <img alt="" src={NodataImg} className="no-data-img"></img>
       </div>
     </div>
   );

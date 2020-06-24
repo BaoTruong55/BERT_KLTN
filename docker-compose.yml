@@ -13,9 +13,9 @@ services:
             APP_PORT: 5000
             SUB_URL: 
             MONGODB_DATABASE: vnexpress
-            MONGODB_USERNAME: imlong
-            MONGODB_PASSWORD: 123456
-            MONGODB_HOSTNAME: localhost
+            MONGODB_USERNAME: twoman
+            MONGODB_PASSWORD: twoman123456
+            MONGODB_HOSTNAME: labando.com
         ports:
             - "5000:5000"
         volumes:
@@ -27,7 +27,7 @@ services:
         build:
             context: Front-End
         container_name: client
-        command: ["npm", "start"]
+        command: ["npm", "run", "start:prod"]
         volumes:
             - clientdata/:/app
             - /app/node_modules

@@ -60,7 +60,7 @@ export const CasesChart = (props) => {
 
   return (
     <div>
-      <Line height={50} data={data} options={options} />
+      <Line data={data} options={options} />
     </div>
   );
 };

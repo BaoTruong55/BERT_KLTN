@@ -3,10 +3,10 @@ import { Chart } from 'react-google-charts';
 
 export const GeoChart = (props) => {
   return (
-    <div>
+    <div className="geo-chart">
       <Chart
-        width={'1000px'}
-        height={'700px'}
+        // width={'500px'}
+        // height={'1000px'}
         chartType="GeoChart"
         data={props.data}
         options={{

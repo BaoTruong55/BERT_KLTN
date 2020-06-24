@@ -1,11 +1,11 @@
 .inputSearch {
-  width: 30%;
+  width: 15%;
   border-radius: 20px 0 0 20px;
   border-right: none;
   transition: width 1s;
   &:focus {
     outline: none;
-    width: 85%;
+    width: 30%;
   }
 }
 .btnSearch {
@@ -15,7 +15,7 @@
   border: 1px solid #ced4da !important;
   border-left: none !important;
   font-weight: bold !important;
-  color: rgba(255, 92, 0, 0.83) !important;
+  color: #ee383b !important;
   &:focus {
     outline: none !important;
   }
@@ -42,7 +42,7 @@
   text-decoration: none;
   &:hover{
     text-decoration: none;
-    color: rgba(255, 92, 0, 0.83);
+    color: #ee383b;
     transition: .5s;
   }
 }

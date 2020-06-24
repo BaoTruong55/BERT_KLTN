@@ -12,6 +12,9 @@
     "chart.js": "^2.9.3",
     "d3-cloud": "^1.2.5",
     "date-fns": "^2.14.0",
+    "env-cmd": "^10.1.0",
+    "mdbootstrap": "^4.19.1",
+    "mdbreact": "^4.27.0",
     "moment": "^2.26.0",
     "normalize.css": "^8.0.1",
     "react": "^16.13.1",
@@ -25,8 +28,12 @@
     "react-wordcloud": "^1.2.3"
   },
   "scripts": {
-    "start": "PORT=3000 react-scripts start",
+    "start": "react-scripts start",
+    "start:dev": "env-cmd -f .env.dev react-scripts start",
+    "start:prod": "env-cmd -f .env.prod react-scripts start",
     "build": "react-scripts build",
+    "build dev": "env-cmd -f .env.dev react-scripts build",
+    "build prod": "env-cmd -f .env.prod react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "eslint": "eslint path/to/src"

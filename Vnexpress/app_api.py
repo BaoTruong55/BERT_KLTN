@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-from infer_predict import *
+# from infer_predict import *
 from post_crawl import *
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin

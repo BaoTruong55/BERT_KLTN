@@ -69,7 +69,7 @@ export function Post() {
   };
 
   /**
-   * get value of input 
+   * get value of input
    * @param {string} event Event on change
    */
   const getInput = (event) => {
@@ -82,9 +82,15 @@ export function Post() {
    */
   const handleSearch = () => {
     if (link !== '') {
+      let url = '';
+      if (process.env.NODE_ENV === 'development') {
+        url = `${process.env.REACT_APP_API_BASE_URL}vnexpress?url=` + link;
+      } else if (process.env.NODE_ENV === 'production') {
+        url = `${process.env.REACT_APP_API_BASE_URL}vnexpress?url=` + link;
+      }
       setIsLoaded(true);
       axios
-        .get(`${process.env.REACT_APP_LOCAL_URL}vnexpress?url=` + link)
+        .get(url)
         .then((res) => {
           setData(res.data);
           console.log(res.data);
@@ -110,7 +116,7 @@ export function Post() {
       <div>
         <h1 className="h1 title">Bài viết</h1>
         <div className="row">
-          <div className="col-4 d-flex inputGroup">
+          <div className="col-12 d-flex inputGroup">
             <input
               className="inputSearch input-group-text text-left"
               placeholder="Link của bài viết"
@@ -127,7 +133,7 @@ export function Post() {
         </div>
         {search ? (
           <div className="row mt-5">
-            <div className="col-md-6 col-sm-12">
+            <div className="col-md-6 col-sm-12 mr-b">
               <PostDetail
                 link={link}
                 title={data.title}
@@ -159,7 +165,13 @@ export function Post() {
                         return (
                           <tr key={index}>
                             <th scope="row">{index + 1}</th>
-                            <td><div dangerouslySetInnerHTML={{ __html: e.data_text }} /></td>
+                            <td>
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: e.data_text,
+                                }}
+                              />
+                            </td>
                           </tr>
                         );
                       })}

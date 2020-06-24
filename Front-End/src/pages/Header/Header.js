@@ -1,69 +1,80 @@
-import React, { useEffect } from 'react';
-import { AppBar, Tabs, Tab } from '@material-ui/core';
+import React from 'react';
 import Homepage from '../Homepage/Homepage';
 import { Category } from '../Category/Category';
 import { World } from '../World/World';
 import { Post } from '../Post/Post';
 import { Topic } from '../Topic/Topic';
 import './Header.scss';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
-import { useLocation } from 'react-router';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import Logo from '../../assets/img/logo.png';
+import {
+  Navbar,
+  NavbarBrand,
+  NavbarNav,
+  NavItem,
+  NavLink,
+  NavbarToggler,
+  Collapse,
+} from 'mdbreact';
 
 export default function NavTabs() {
-  const [value, setValue] = React.useState(0);
-  let location = useLocation();
-  useEffect(() => {
-    const getParam = () => {
-      switch (location.pathname) {
-        case '/':
-          setValue(0);
-          break;
-        case '/vietnam':
-          setValue(1);
-          break;
-        case '/ros':
-          setValue(2);
-          break;
-        case '/post':
-          setValue(3);
-          break;
-        case '/topic':
-          setValue(4);
-          break;
-        default:
-          break;
-      }
-    };
-    getParam();
-  }, [location.pathname]);
+  const [isOpen, setIsOpen] = React.useState(false);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  const toggleCollapse = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleOpen = () => {
+    setIsOpen(false);
   };
 
   return (
     <Router>
-      <div>
-        <AppBar position="static" color="default">
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            aria-label="nav tabs example"
-          >
-            <Tab label="Trang chủ" component={Link} to="/" />
-            <Tab label="Việt Nam" component={Link} to="/vietnam" />
-            <Tab label="Covid" component={Link} to="/ros" />
-            <Tab label="Bài viết" component={Link} to="/post" />
-            <Tab label="Chủ đề nổi bật" component={Link} to="/topic" />
-          </Tabs>
-        </AppBar>
-        <div className="component">
-          <Route exact path="/" component={Homepage} />
-          <Route path="/vietnam" component={World} />
-          <Route path="/ros" component={Category} />
-          <Route path="/post" component={Post} />
-          <Route path="/topic" component={Topic} />
-        </div>
+      <Navbar
+        color="primary-color"
+        light
+        expand="md"
+        scrolling={true}
+        className="border-bottom shadow-sm"
+      >
+        <NavbarBrand>
+          <img src={Logo} alt="" />
+        </NavbarBrand>
+        <NavbarToggler onClick={toggleCollapse} />
+        <Collapse id="navbarCollapse3" isOpen={isOpen} navbar>
+          <NavbarNav right>
+            <NavItem>
+              <NavLink onClick={handleOpen} exact to="/">
+                Trang chủ
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink onClick={handleOpen} to="/vietnam">
+                Việt Nam
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink onClick={handleOpen} to="/ros">
+                Covid
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink onClick={handleOpen} to="/post">
+                Bài viết
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/topic">Chủ đề nổi bật</NavLink>
+            </NavItem>
+          </NavbarNav>
+        </Collapse>
+      </Navbar>
+      <div className="component">
+        <Route exact path="/" component={Homepage} />
+        <Route path="/vietnam" component={World} />
+        <Route path="/ros" component={Category} />
+        <Route path="/post" component={Post} />
+        <Route path="/topic" component={Topic} />
       </div>
     </Router>
   );

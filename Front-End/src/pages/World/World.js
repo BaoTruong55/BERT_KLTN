@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './World.scss';
-import { ComfirmedCaseChart } from './Components/ComfirmedCaseChart';
+import { ConfirmedCaseChart } from './Components/ConfirmedCaseChart';
 import { CasesChart } from './Components/Cases';
 import { GeoChart } from '../../shared/GeoChart/GeoChart';
 import axios from 'axios';
@@ -33,7 +33,7 @@ export const World = () => {
       await axios
         .get('https://gw.vnexpress.net/cr/?name=tracker_coronavirus')
         .then((res) => {
-          console.log(res.data.data);
+          // console.log(res.data.data);
 
           if (res.data && res.data.data && res.data.data.data[0]) {
             let tracker_by_province = res.data.data.data[0].tracker_by_province;
@@ -97,7 +97,7 @@ export const World = () => {
           console.log(err);
         });
     }
-    fetchMyAPI();
+     fetchMyAPI();
   }, []);
 
   if (loading) {
@@ -113,7 +113,7 @@ export const World = () => {
             <div className="row">
               <div className="col-md-6">
                 <div className="row">
-                  <div className="col-md-4">
+                  <div className="col-md-4 mr-b">
                     <Paper
                       className="d-flex flex-column align-items-center pt-2"
                       elevation={3}
@@ -122,7 +122,7 @@ export const World = () => {
                       <h3>{data.data[0].tracker_total_by_day.cases}</h3>
                     </Paper>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-4 mr-b">
                     <Paper
                       className="d-flex flex-column align-items-center pt-2"
                       elevation={3}
@@ -134,7 +134,7 @@ export const World = () => {
                       </h3>
                     </Paper>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-4 mr-b">
                     <Paper
                       className="d-flex flex-column align-items-center pt-2"
                       elevation={3}
@@ -144,7 +144,7 @@ export const World = () => {
                     </Paper>
                   </div>
                 </div>
-                <Paper className="mt-3 pl-3" elevation={3}>
+                <Paper className="mt-3 pl-3 mr-b" elevation={3}>
                   <div className="row pt-2">
                     <div className="col-md-12">
                       <h3>Thống kê theo tỉnh thành</h3>
@@ -178,7 +178,7 @@ export const World = () => {
                   </div>
                 </Paper>
               </div>
-              <div className="col-md-6 d-flex flex-column align-items-center case-chart">
+              <div className="col-md-6 d-flex flex-column justify-content-center align-items-center case-chart">
                 <h4>Phân bố ca nhiễm ở Việt Nam</h4>
                 <GeoChart data={mapData} />
               </div>
@@ -203,8 +203,7 @@ export const World = () => {
                 <div className="card">
                   <h4 className="card-header">Tổng số ca</h4>
                   <div className="card-body">
-                    {console.log(dataChart.totalCases)}
-                    <ComfirmedCaseChart
+                    <ConfirmedCaseChart
                       labels={dataChart.growthName}
                       data1={dataChart.totalCases}
                       data2={dataChart.recoveredCases}
