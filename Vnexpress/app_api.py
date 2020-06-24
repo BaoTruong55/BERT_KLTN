@@ -195,17 +195,14 @@ class VnexpressInDatabase(Resource):
 
         sentiment = sentiment_in_posts(post)
 
-        df_negatives = df_output[df_output['label'] == 0]
-        df_possitives = df_output[df_output['label'] == 1]
-
         output = {
             "title": title,
             "description": description,
             "thumbnailUrl": thumbnail_url,
-            "pos": len(sentiment.comments_pos),
-            "neg": len(sentiment.comments_neg),
-            "commentPos": sentiment.comments_pos,
-            "commentNeg": sentiment.comments_neg
+            "pos": len(sentiment['comments_pos']),
+            "neg": len(sentiment['comments_neg']),
+            "commentPos": sentiment['comments_pos'],
+            "commentNeg": sentiment['comments_neg']
         }
 
         return Response(
