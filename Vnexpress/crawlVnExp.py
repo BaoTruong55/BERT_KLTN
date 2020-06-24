@@ -287,6 +287,32 @@ def get_info_post_by_date(url, date):
             url.format(page=page_index),
             date=date
         )
+
+        for index_post, info_post in enumerate(info_posts_page_current, start=0):
+            post, tags, topic = get_info_post(
+                info_post['link'],
+                info_post['id']
+            )
+
+            info_posts_page_current[index_post]['post'] = post
+
+            print('- {title}'.format(
+                title=post.title
+            ))
+
+            if tags != None:
+                for tag in tags:
+                    if post not in tag.posts:
+                        tag.posts.append(post)
+                    tag.save()
+
+            if topic != None:
+                if post not in topic.posts:
+                    topic.posts.append(post)
+                topic.save()
+
+        info_posts.extend(info_posts_page_current)
+
         info_posts.extend(info_posts_page_current)
         print("Pages: [{page}] Number of post: {numOfPost}".format(
             page=page_index,
@@ -299,7 +325,7 @@ def get_info_post_by_date(url, date):
     return remove_duplicate(info_posts)
 
 
-def get_info_post_by_page(url, page):
+def get_info_post_by_pages(url, page):
     info_posts = []
     page_index = 1
     for page_index in range(1, page+1):
@@ -339,6 +365,7 @@ def get_info_post_by_category(category, from_date, to_date):
                 fromdate=datetime_to_timestamp(from_date),
                 todate=datetime_to_timestamp(to_date)
             )
+
             info_posts_page_current, status = get_info_post_by_list(
                 url,
                 date=None
