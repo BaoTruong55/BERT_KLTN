@@ -86,7 +86,7 @@ export function Post() {
       if (process.env.NODE_ENV === 'development') {
         url = `${process.env.REACT_APP_API_BASE_URL}vnexpress?url=` + link;
       } else if (process.env.NODE_ENV === 'production') {
-        url = `${process.env.REACT_APP_API_BASE_URL}vnexpress?url=` + link;
+        url = `${process.env.REACT_APP_API_BASE_URL}vnexpress/post?url=` + link;
       }
       setIsLoaded(true);
       axios
