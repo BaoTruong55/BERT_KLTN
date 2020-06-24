@@ -184,6 +184,36 @@ class Vnexpress(Resource):
         )
 
 
+class VnexpressInDatabase(Resource):
+    def get(self):
+        url = request.args.get('url')
+        id_post, title, description, thumbnail_url = get_info_post(url)
+        post = Post.objects(idPost=id_post).first()
+
+        if post == None:
+            return {"Error": "The article not predict comment"}
+
+        sentiment = sentiment_in_posts(post)
+
+        df_negatives = df_output[df_output['label'] == 0]
+        df_possitives = df_output[df_output['label'] == 1]
+
+        output = {
+            "title": title,
+            "description": description,
+            "thumbnailUrl": thumbnail_url,
+            "pos": len(sentiment.comments_pos),
+            "neg": len(sentiment.comments_neg),
+            "commentPos": sentiment.comments_pos,
+            "commentNeg": sentiment.comments_neg
+        }
+
+        return Response(
+            json.dumps(output),
+            mimetype='application/json'
+        )
+
+
 class Covid(Resource):
     def get(self):
         date_to = request.args.get('dateto')
@@ -398,12 +428,13 @@ class TopicSentiment(Resource):
 
 
 api.add_resource(Vnexpress, SUB_URL)
+api.add_resource(VnexpressInDatabase, SUB_URL + '/post')
 api.add_resource(Covid, SUB_URL + '/covid')
 api.add_resource(TopTags, SUB_URL + '/toptag')
 api.add_resource(TopTopics, SUB_URL + '/toptopic')
 api.add_resource(Categories, SUB_URL + '/categories')
 api.add_resource(TagSentiment, SUB_URL + '/tagsentiment')
-api.add_resource(TopicSentiment, SUB_URL + 'topicsentiment')
+api.add_resource(TopicSentiment, SUB_URL + '/topicsentiment')
 api.add_resource(CategorySentiment, SUB_URL + '/categorysentiment')
 
 if __name__ == '__main__':
