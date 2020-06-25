@@ -83,11 +83,13 @@ export function Post() {
   const handleSearch = () => {
     if (link !== '') {
       let url = '';
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.REACT_APP_ENVIROMENT === 'development') {
         url = `${process.env.REACT_APP_API_BASE_URL}vnexpress?url=` + link;
-      } else if (process.env.NODE_ENV === 'production') {
+      } else if (process.env.REACT_APP_ENVIROMENT === 'production') {
         url = `${process.env.REACT_APP_API_BASE_URL}vnexpress/post?url=` + link;
       }
+      console.log(process.env.REACT_APP_ENVIROMENT);
+      console.log(url);
       setIsLoaded(true);
       axios
         .get(url)
