@@ -35,7 +35,7 @@ export default function NavTabs() {
         light
         expand="md"
         scrolling={true}
-        className="border-bottom shadow-sm"
+        className="border-bottom shadow-sm pt-0 pb-0"
       >
         <NavbarBrand>
           <img src={Logo} alt="" />
@@ -43,28 +43,30 @@ export default function NavTabs() {
         <NavbarToggler onClick={toggleCollapse} />
         <Collapse id="navbarCollapse3" isOpen={isOpen} navbar>
           <NavbarNav right>
-            <NavItem>
+            <NavItem className="pr-2">
               <NavLink onClick={handleOpen} exact to="/">
                 Trang chủ
               </NavLink>
             </NavItem>
-            <NavItem>
+            <NavItem className="pr-2">
               <NavLink onClick={handleOpen} to="/vietnam">
                 Việt Nam
               </NavLink>
             </NavItem>
-            <NavItem>
+            <NavItem className="pr-2">
               <NavLink onClick={handleOpen} to="/ros">
                 Covid
               </NavLink>
             </NavItem>
-            <NavItem>
+            <NavItem className="pr-2">
               <NavLink onClick={handleOpen} to="/post">
                 Bài viết
               </NavLink>
             </NavItem>
-            <NavItem>
-              <NavLink to="/topic">Chủ đề nổi bật</NavLink>
+            <NavItem className="pr-2">
+              <NavLink onClick={handleOpen} to="/topic">
+                Chủ đề nổi bật
+              </NavLink>
             </NavItem>
           </NavbarNav>
         </Collapse>

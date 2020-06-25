@@ -1,7 +1,7 @@
 import React from 'react';
 import './Homepage.scss';
-// import Img1 from '../../assets/img/homepage1.png';
-import ImgTitle from '../../assets/img/title-homepage.png'
+import Img1 from '../../assets/img/homepage1.png';
+import ImgTitle from '../../assets/img/title-homepage.png';
 import Img2 from '../../assets/img/homepage2.jpg';
 import { useHistory } from 'react-router-dom';
 
@@ -14,14 +14,14 @@ const Homepage = () => {
     <div>
       <div className="row homepage">
         <div className="tilt-in-fwd-bl col-md-4 col-sm-12 flex-column d-flex justify-content-center align-items-center mr-b">
-          {/* <div className="title-homepage">
+          <div className="title-homepage">
             <div className="row">
               <div className="col-md-12 title-homepage_Sa">
-                Phân tích tình cảm
+                Phân tích cảm xúc
               </div>
             </div>
             <div className="row">
-              <div className="col-md-4 d-flex">
+              <div className="col-4 d-flex">
                 <div className="row">
                   <div className="col-md-12 title-homepage_comment">
                     bình luận
@@ -29,15 +29,15 @@ const Homepage = () => {
                   <div className="col-md-12 title-homepage_comment">về</div>
                 </div>
               </div>
-              <div className="col-md-8">
-                <div className="row">
-                  <div className="col-md-12 title-homepage_covid pl-0 pr-0">Covid-19</div>
-                </div>
+              <div className="col-8 title-homepage_covid pl-0 pr-0">
+                Covid-19
               </div>
             </div>
-          </div> */}
-          <img alt="" src={ImgTitle} className="img1" />
-          <p className="description">Project được lấy dữ liệu và phân tích từ trang web VnExpress.vn</p>
+          </div>
+          {/* <img alt="" src={ImgTitle} className="img1" /> */}
+          <p className="description">
+            Project được lấy dữ liệu và phân tích từ trang web VnExpress.vn
+          </p>
           <button
             type="button"
             onClick={handleClick}
