@@ -1,7 +1,7 @@
 import React from 'react';
 import './Homepage.scss';
-import Img1 from '../../assets/img/homepage1.png';
-import ImgTitle from '../../assets/img/title-homepage.png';
+// import Img1 from '../../assets/img/homepage1.png';
+// import ImgTitle from '../../assets/img/title-homepage.png';
 import Img2 from '../../assets/img/homepage2.jpg';
 import { useHistory } from 'react-router-dom';
 
