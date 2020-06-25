@@ -5,6 +5,10 @@
 .word-cloud {
   width: 100%;
 }
+
+.rdrDefinedRangesWrapper{
+  display: none;
+}
 // Responsive full-hd
 @media screen and (max-width: 2200px) {
   .title-homepage {
