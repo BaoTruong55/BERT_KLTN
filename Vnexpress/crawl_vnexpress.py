@@ -1,5 +1,6 @@
 import urllib.request
 import json
+import random
 from collections import namedtuple
 import csv
 from bs4 import BeautifulSoup  # BeautifulSoup is in bs4 package
@@ -566,20 +567,38 @@ def crawl_all_a_month():
     crawl_all_n_days(30)
 
 
+def random_comments(comments, size):
+    start = time.time()
+    import random
+
+    count_comment = len(comments)
+    number_random = random.sample(
+        range(0, count_comment), min(size, count_comment))
+    print("get random commnets")
+
+    result = list(map(lambda index: comments[index], number_random))
+
+    end = time.time()
+    print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
+
+    return result
+
+
 def predict_comment():
-    comments = Comment.objects(label=None)
-    print(len(comments))
-    if len(comments) > 0:
-        comment_text = list(map(GET_COMMENT_TEXT, comments))
-        comment_id = list(map(GET_COMMENT_ID, comments))
-        print(comment_text)
-        print(comment_id)
-        df = nomalize_data_comment_vnexpress(comment_id, comment_text)
-        df_result = predict_data(df)
-        for comment in comments:
-            comment.label = df_result[df_result['id']
-                                      == comment.idComment]['label']
-            comment.save()
+    count_comment = 1000
+    while count_comment == 1000:
+        comments = Comment.objects(label=None)
+        comments = random_comments(comments, 1000)
+        count_commentc = len(comments)
+        if len(comments) > 0:
+            comment_text = list(map(GET_COMMENT_TEXT, comments))
+            comment_id = list(map(GET_COMMENT_ID, comments))
+            df = nomalize_data_comment_vnexpress(comment_id, comment_text)
+            df_result = predict_data(df)
+            for comment in comments:
+                comment.label = df_result[df_result['id']
+                                          == comment.idComment]['label']
+                comment.save()
     print('Done')
 
 
