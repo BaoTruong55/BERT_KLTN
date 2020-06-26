@@ -4,7 +4,8 @@ from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
 # from infer_predict import *
-from post_crawl import *
+from crawl_post import *
+from crawl_vnexpress import get_info_post
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin
 from datetime import datetime, date, timedelta
@@ -18,14 +19,6 @@ CORS(application)
 api = Api(application)
 
 SUB_URL = os.environ.get("SUB_URL", '/vnexpress')
-
-
-def IS_LABEL_NEG(item): return item.label == 0
-def IS_LABEL_POS(item): return item.label == 1
-def GET_COMMENT(item): return item.comments
-def GET_USER_LIKE(item): return item.userLike
-def GET_COMMENTS_IN_POST(item): return item.comments
-def GET_ID_POST(item): return item.idPost
 
 
 def format_date(date):
@@ -53,9 +46,9 @@ def filter_posts_by_date(postsSource, date_from, date_to):
 
 
 def sentiment_in_posts(posts):
-    comments = sum(list(map(GET_COMMENT, posts)), [])
-    comments_pos = list(filter(IS_LABEL_POS, comments))
-    comments_neg = list(filter(IS_LABEL_NEG, comments))
+    comments = sum(list(map(Post.get_comments, posts)), [])
+    comments_pos = list(filter(Comment.is_label_pos, comments))
+    comments_neg = list(filter(Comment.is_label_neg, comments))
 
     return {
         "comments_pos": comments_pos,
@@ -88,10 +81,10 @@ def classify_comment_by_date(posts, date_from, date_to):
 
     classify_comment = {}
     for key, value_posts in classify_post.items():
-        comments = sum(list(map(GET_COMMENTS_IN_POST, value_posts)), [])
+        comments = sum(list(map(Post.get_comments, value_posts)), [])
 
-        comments_neg = list(filter(IS_LABEL_NEG, comments))
-        comments_pos = list(filter(IS_LABEL_POS, comments))
+        comments_neg = list(filter(Comment.is_label_neg, comments))
+        comments_pos = list(filter(Comment.is_label_pos, comments))
         # comments_text_neg = list(map(GET_COMMENT, comments_neg))
         # comments_text_pos = list(map(GET_COMMENT, comments_pos))
 
@@ -145,22 +138,22 @@ def topic(id, date_from, date_to):
 
 def posts_in_topic(id, date_from, date_to):
     posts_in_topic = Topic.objects.get(idTopic=id).posts
-    return filter_posts_by_date(posts_in_topic, date_from, date_to)
+    return Topic.get_posts_by_date(posts_in_topic, date_from, date_to)
 
 
 def posts_in_tag(id, date_from, date_to):
     posts_in_tag = Tag.objects.get(idTag=id).posts
-    return filter_posts_by_date(posts_in_tag, date_from, date_to)
+    return Tag.get_posts_by_date(posts_in_tag, date_from, date_to)
 
 
 class Vnexpress(Resource):
     def get(self):
         url = request.args.get('url')
-        id_post, title, description, thumbnail_url = get_info_post(url)
+        id_post, title, description, thumbnail_url = get_info_post_crawl(url)
         comments = get_comments(id_post)
 
         if len(comments) == 0:
-            return {"Error": "The article has no comments"}
+            return {"error": "The article has no comments"}
 
         df = normalize_data(comments)
         df_result = predict_data(df)
@@ -187,22 +180,43 @@ class Vnexpress(Resource):
 class VnexpressInDatabase(Resource):
     def get(self):
         url = request.args.get('url')
-        id_post, title, description, thumbnail_url = get_info_post(url)
+        id_post, title, description, thumbnail_url = get_info_post_crawl(url)
         post = Post.objects(idPost=id_post).first()
 
         if post == None:
-            return {"Error": "The article not predict comment"}
+            post, tags, topic = get_info_post(url, id_post)
+            if tags != None:
+                for tag in tags:
+                    if post not in tag.posts:
+                        tag.posts.append(post)
+                    tag.save()
 
-        sentiment = sentiment_in_posts(post)
+            if topic != None:
+                if post not in topic.posts:
+                    topic.posts.append(post)
+                topic.save()
 
+            comments = get_comments(id_post)
+
+            for index, comment in enumerate(comments, start=1):
+                if comment not in post.comments:
+                    post.comments.append(comment)
+
+            return {"error": "The article not predict comment"}
+
+        sentiment = sentiment_in_posts([post])
+        if len(sentiment['comments_pos']) != 0 and len(sentiment['comment_neg']) != 0:
+            return {"error": "The article not predict comments"}
+
+        print(sentiment)
         output = {
             "title": title,
             "description": description,
             "thumbnailUrl": thumbnail_url,
             "pos": len(sentiment['comments_pos']),
             "neg": len(sentiment['comments_neg']),
-            "commentPos": sentiment['comments_pos'],
-            "commentNeg": sentiment['comments_neg']
+            "commentPos": list(map(lambda item: item.comments, sentiment['comments_pos'])),
+            "commentNeg": list(map(lambda item: tiem.comments, sentiment['comments_neg']))
         }
 
         return Response(
@@ -239,15 +253,13 @@ class TopTopics(Resource):
         top_topic = TopTopic.objects(
             unitTime='month'
         ).order_by('-created').first()
-
         topics = list(map(
             lambda item: {
                 "id": item.idTopic,
                 "title": "-".join(item.title.split('-')[:-1]),
                 "description": item.description,
                 "count_posts": len(
-                    filter_posts_by_date(
-                        item.posts,
+                    item.get_posts_by_date(
                         top_topic.dateFrom,
                         top_topic.dateTo
                     )
@@ -271,8 +283,7 @@ class TopTags(Resource):
                 "title": item.name,
                 "url": item.url,
                 "count_posts": len(
-                    filter_posts_by_date(
-                        item.posts,
+                    item.get_posts_by_date(
                         top_tag.dateFrom,
                         top_tag.dateTo
                     )

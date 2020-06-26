@@ -21,7 +21,7 @@ def get_json_from_url(url):
 # URL = "https://vnexpress.net/tho-dan-giua-covid-19-4094885.html"
 
 
-def get_info_post(URL):
+def get_info_post_crawl(URL):
     content = requests.get(URL)
     soup = BeautifulSoup(content.text, 'html.parser')
     idPost = soup.find('meta', attrs={'name': 'its_id'}).get('content')

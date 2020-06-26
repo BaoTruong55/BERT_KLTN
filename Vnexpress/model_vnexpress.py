@@ -3,9 +3,9 @@ from mongoengine import *
 import datetime
 
 MONGODB_DATABASE = os.environ.get("MONGODB_DATABASE", 'vnexpress')
-MONGODB_USERNAME = os.environ.get("MONGODB_USERNAME", '')
-MONGODB_PASSWORD = os.environ.get("MONGODB_PASSWORD", '')
-MONGODB_HOSTNAME = os.environ.get("MONGODB_HOSTNAME", 'localhost')
+MONGODB_USERNAME = os.environ.get("MONGODB_USERNAME", 'twoman')
+MONGODB_PASSWORD = os.environ.get("MONGODB_PASSWORD", 'twoman123456')
+MONGODB_HOSTNAME = os.environ.get("MONGODB_HOSTNAME", 'labando.com')
 
 if MONGODB_USERNAME != '' and MONGODB_PASSWORD != '':
     connect(
@@ -25,6 +25,15 @@ else:
     )
 
 
+def filter_posts_by_date(postsSource, date_from, date_to):
+    posts = list(filter(
+        lambda item:
+            item.publishTime <= date_to and
+            item.publishTime >= date_from, postsSource
+    ))
+    return posts
+
+
 class Comment(Document):
     __version = DecimalField(default=4)
     idComment = StringField(required=True, unique=True)
@@ -34,6 +43,15 @@ class Comment(Document):
     createTime = DateTimeField()
     userLike = DecimalField()
     meta = {'db_alias': 'db'}
+
+    def is_label_neg(self):
+        return self.label == 0
+
+    def is_label_pos(self):
+        return self.label == 1
+
+    def get_comment(self):
+        return self.comment
 
 
 class Post(Document):
@@ -48,6 +66,9 @@ class Post(Document):
     comments = ListField(ReferenceField(Comment))
     meta = {'db_alias': 'db'}
 
+    def get_comments(self):
+        return self.comments
+
 
 class Tag(Document):
     __version = DecimalField(default=2)
@@ -57,6 +78,14 @@ class Tag(Document):
     url = StringField(required=True)
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
+
+    def get_posts_by_date(self, date_from, date_to):
+        posts = Post.objects(
+            id__in=self.to_mongo()['posts'],
+            publishTime__gte=date_from,
+            publishTime__lte=date_to
+        )
+        return posts
 
 
 class TopTag(Document):
@@ -80,6 +109,14 @@ class Topic(Document):
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
 
+    def get_posts_by_date(self, date_from, date_to):
+        posts = Post.objects(
+            id__in=self.to_mongo()['posts'],
+            publishTime__gte=date_from,
+            publishTime__lte=date_to
+        )
+        return posts
+
 
 class TopTopic(Document):
     __version = DecimalField(default=2)
@@ -100,3 +137,12 @@ class Category(Document):
     description = StringField(required=False)
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
+
+    def get_posts_by_date(self, date_from, date_to):
+        posts = Post.objects(
+            id__in=self.to_mongo()['posts'],
+            publishTime__gte=date_from,
+            publishTime__lte=date_to
+        )
+        return posts
+
