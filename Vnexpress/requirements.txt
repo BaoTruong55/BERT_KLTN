@@ -8,3 +8,4 @@ beautifulsoup4==4.8.2
 urllib3==1.25.8
 mongoengine==0.20.0
 python-dateutil==2.7.3
+unidecode

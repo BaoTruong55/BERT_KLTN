@@ -205,7 +205,7 @@ class VnexpressInDatabase(Resource):
             return {"error": "The article not predict comment"}
 
         sentiment = sentiment_in_posts([post])
-        if len(sentiment['comments_pos']) != 0 and len(sentiment['comment_neg']) != 0:
+        if len(sentiment['comments_pos']) != 0 and len(sentiment['comments_neg']) != 0:
             return {"error": "The article not predict comments"}
 
         print(sentiment)
