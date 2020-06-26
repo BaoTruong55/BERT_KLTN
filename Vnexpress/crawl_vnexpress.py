@@ -574,7 +574,7 @@ def random_comments(comments, size):
     count_comment = len(comments)
     number_random = random.sample(
         range(0, count_comment), min(size, count_comment))
-    print("get random commnets")
+    print("get random comments")
 
     result = list(map(lambda index: comments[index], number_random))
 
