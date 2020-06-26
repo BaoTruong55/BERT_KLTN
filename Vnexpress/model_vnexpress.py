@@ -1,6 +1,7 @@
 import os
 from mongoengine import *
-import datetime
+from datetime import datetime, date, timedelta
+from dateutil import parser
 
 MONGODB_DATABASE = os.environ.get("MONGODB_DATABASE", 'vnexpress')
 MONGODB_USERNAME = os.environ.get("MONGODB_USERNAME", 'twoman')
@@ -25,11 +26,21 @@ else:
     )
 
 
+def format_date(date):
+    return str(f'{date:%m/%d/%Y}')
+
+
 def filter_posts_by_date(postsSource, date_from, date_to):
+    if type(date_from) is datetime:
+        date_from = format_date(date_from)
+
+    if type(date_to) is datetime:
+        date_to = format_date(date_to)
+
     posts = list(filter(
         lambda item:
-            item.publishTime <= date_to and
-            item.publishTime >= date_from, postsSource
+            item.publishTime <= parser.parse(date_to) + timedelta(days=1) and
+            item.publishTime >= parser.parse(date_from), list(postsSource)
     ))
     return posts
 
@@ -37,7 +48,7 @@ def filter_posts_by_date(postsSource, date_from, date_to):
 class Comment(Document):
     __version = DecimalField(default=4)
     idComment = StringField(required=True, unique=True)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     comment = StringField(required=True)
     label = IntField()
     createTime = DateTimeField()
@@ -57,7 +68,7 @@ class Comment(Document):
 class Post(Document):
     __version = DecimalField(default=3)
     idPost = StringField(required=True, unique=True)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     title = StringField(required=True)
     publishTime = DateTimeField()
     url = StringField(required=True)
@@ -73,24 +84,20 @@ class Post(Document):
 class Tag(Document):
     __version = DecimalField(default=2)
     idTag = StringField(required=True, unique=True)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     name = StringField(required=True)
     url = StringField(required=True)
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
 
     def get_posts_by_date(self, date_from, date_to):
-        posts = Post.objects(
-            id__in=self.to_mongo()['posts'],
-            publishTime__gte=date_from,
-            publishTime__lte=date_to
-        )
+        posts = filter_posts_by_date(self.posts, date_from, date_to)
         return posts
 
 
 class TopTag(Document):
     __version = DecimalField(default=2)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     unitTime = StringField(required=True)
     dateFrom = DateTimeField(required=True)
     dateTo = DateTimeField(required=True)
@@ -103,24 +110,20 @@ class Topic(Document):
     __version = DecimalField(default=2)
     idTopic = StringField(required=True, unique=True)
     articleTopic = StringField(required=True)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     title = StringField(required=True)
     description = StringField(required=False)
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
 
     def get_posts_by_date(self, date_from, date_to):
-        posts = Post.objects(
-            id__in=self.to_mongo()['posts'],
-            publishTime__gte=date_from,
-            publishTime__lte=date_to
-        )
+        posts = filter_posts_by_date(self.posts, date_from, date_to)
         return posts
 
 
 class TopTopic(Document):
     __version = DecimalField(default=2)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     unitTime = StringField(required=True)
     dateFrom = DateTimeField(required=True)
     dateTo = DateTimeField(required=True)
@@ -132,17 +135,13 @@ class TopTopic(Document):
 class Category(Document):
     __version = DecimalField(default=2)
     idCategory = StringField(required=True, unique=True)
-    created = DateTimeField(default=datetime.datetime.utcnow)
+    created = DateTimeField(default=datetime.utcnow)
     title = StringField(required=True)
     description = StringField(required=False)
     posts = ListField(ReferenceField(Post))
     meta = {'db_alias': 'db'}
 
     def get_posts_by_date(self, date_from, date_to):
-        posts = Post.objects(
-            id__in=self.to_mongo()['posts'],
-            publishTime__gte=date_from,
-            publishTime__lte=date_to
-        )
+        posts = filter_posts_by_date(self.posts, date_from, date_to)
         return posts
 

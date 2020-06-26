@@ -5,7 +5,7 @@ from json import dumps
 from flask import jsonify
 from infer_predict import *
 from crawl_post import *
-from crawl_vnexpress import get_info_post
+from crawl_vnexpress import get_info_post, get_comments
 from model_vnexpress import *
 from flask_cors import CORS, cross_origin
 from datetime import datetime, date, timedelta
@@ -32,23 +32,23 @@ def daterange(start_date, end_date):
 
 def filter_posts_by_date(postsSource, date_from, date_to):
     if type(date_from) is datetime:
-        date_from = format(date_from)
+        date_from = format_date(date_from)
 
     if type(date_to) is datetime:
-        date_to = format(date_to)
+        date_to = format_date(date_to)
 
     posts = list(filter(
         lambda item:
             item.publishTime <= parser.parse(date_to) + timedelta(days=1) and
-            item.publishTime >= parser.parse(date_from), postsSource
+            item.publishTime >= parser.parse(date_from), list(postsSource)
     ))
     return posts
 
 
 def sentiment_in_posts(posts):
     comments = sum(list(map(Post.get_comments, posts)), [])
-    comments_pos = list(filter(Comment.is_label_pos, comments))
-    comments_neg = list(filter(Comment.is_label_neg, comments))
+    comments_pos = list(filter(Comment.is_label_pos, list(comments)))
+    comments_neg = list(filter(Comment.is_label_neg, list(comments)))
 
     return {
         "comments_pos": comments_pos,
@@ -73,7 +73,7 @@ def classify_comment_by_date(posts, date_from, date_to):
                 "description": item.description,
                 "count_comment": len(item.comments)
             },
-            posts
+            list(posts)
         )
     )
 
@@ -97,7 +97,7 @@ def classify_comment_by_date(posts, date_from, date_to):
                     "description": item.description,
                     "count_comment": len(item.comments)
                 },
-                value_posts
+                list(value_posts)
             )
         )
 
@@ -150,7 +150,7 @@ class Vnexpress(Resource):
     def get(self):
         url = request.args.get('url')
         id_post, title, description, thumbnail_url = get_info_post_crawl(url)
-        comments = get_comments(id_post)
+        comments = get_comments_crawl(id_post)
 
         if len(comments) == 0:
             return {"error": "The article has no comments"}
@@ -200,7 +200,7 @@ class VnexpressInDatabase(Resource):
                 topic.save()
 
             comments = get_comments(id_post)
-            print(comments)
+
             for index, comment in enumerate(comments, start=1):
                 if comment not in post.comments:
                     post.comments.append(comment)
@@ -220,7 +220,7 @@ class VnexpressInDatabase(Resource):
                     "data_text": item.comment,
                     "label": item.label
                 },
-                sentiment['comments_pos']
+                list(sentiment['comments_pos'])
             )),
             "commentNeg": list(map(
                 lambda item:
@@ -228,7 +228,7 @@ class VnexpressInDatabase(Resource):
                     "data_text": item.comment,
                     "label": item.label
                 },
-                sentiment['comments_neg']
+                list(sentiment['comments_neg'])
             )),
         }
 
@@ -277,7 +277,7 @@ class TopTopics(Resource):
                         top_topic.dateTo
                     )
                 ),
-            }, top_topic.topics
+            }, list(top_topic.topics)
         ))
         return Response(
             json.dumps(topics),
@@ -301,7 +301,7 @@ class TopTags(Resource):
                         top_tag.dateTo
                     )
                 ),
-            }, top_tag.tags
+            }, list(top_tag.tags)
         ))
         return Response(
             json.dumps(tags),

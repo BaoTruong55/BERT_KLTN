@@ -59,7 +59,7 @@ def get_children_comment(id_post, id_parent):
 # ! Get parent comment in a post
 
 
-def get_comments(id_post):
+def get_comments_crawl(id_post):
     list_comment = []
     url = "https://usi-saas.vnexpress.net/index/get?limit=1000000&siteid=1000000&objecttype=1&objectid={objectid}".format(
         objectid=id_post)
