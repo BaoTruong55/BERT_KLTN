@@ -570,7 +570,7 @@ def crawl_all_a_month():
 def random_comments(comments, size):
     start = time.time()
     import random
-
+    comments = list(comments)
     count_comment = len(comments)
     number_random = random.sample(
         range(0, count_comment), min(size, count_comment))
