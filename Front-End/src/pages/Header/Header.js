@@ -38,7 +38,7 @@ export default function NavTabs() {
         className="border-bottom shadow-sm pt-0 pb-0"
       >
         <NavbarBrand>
-          <img src={Logo} alt="" />
+          <img src={Logo} alt="" className="logo"/>
         </NavbarBrand>
         <NavbarToggler onClick={toggleCollapse} />
         <Collapse id="navbarCollapse3" isOpen={isOpen} navbar>

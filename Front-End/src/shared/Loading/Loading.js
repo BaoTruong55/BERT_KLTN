@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import './Loading.scss';
 export const Loading = () => {
   useEffect(() => {
-    console.log("object")
     const logoAnimation = window.anime.timeline({
       autoplay: true,
       loop: true,

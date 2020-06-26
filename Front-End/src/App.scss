@@ -5,6 +5,10 @@
 .word-cloud {
   width: 100%;
 }
+
+.rdrDefinedRangesWrapper{
+  display: none;
+}
 // Responsive full-hd
 @media screen and (max-width: 2200px) {
   .title-homepage {
@@ -53,6 +57,15 @@
 }
 
 @media screen and (max-width: 1500px) {
+  .logo{
+    width: 120px;
+  }
+  .nav-item{
+    font-size: 12px;
+  }
+  .title{
+    font-size: 28px;
+  }
   .title-homepage {
     .title-homepage_Sa {
       font-size: 45px;

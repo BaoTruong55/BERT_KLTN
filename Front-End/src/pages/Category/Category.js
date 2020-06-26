@@ -103,7 +103,7 @@ export const Category = () => {
   }
 
   const getReturnData = (e) => {
-    console.log(e);
+    // console.log(e);
     let resData = data.data.allData.filter((elems) => elems.date === e);
     setDataPost(resData[0]);
     setDisplayTop(false);
@@ -114,7 +114,7 @@ export const Category = () => {
    * fetch data from post's link
    */
   const handleFilter = () => {
-    console.log(rangeFormat);
+    // console.log(rangeFormat);
     setLoading(true);
     setFilter(true);
     axios
@@ -125,7 +125,7 @@ export const Category = () => {
           rangeFormat.endDate
       )
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         let labels = [];
         let dataPos = [];
         let dataNeg = [];
@@ -251,7 +251,6 @@ export const Category = () => {
                 <div className="card">
                   <h4 className="card-header">Tích cực và Tiêu cực</h4>
                   <div className="card-body">
-                    {console.log(data.data.totalPos)}
                     <DonutChart
                       data={[data.data.totalPos, data.data.totalNeg]}
                       labels={['Tích cực', 'Tiêu cực']}

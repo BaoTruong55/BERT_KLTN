@@ -73,7 +73,7 @@ export function Post() {
    * @param {string} event Event on change
    */
   const getInput = (event) => {
-    console.log(event.target.value);
+    // console.log(event.target.value);
     setLink(event.target.value);
   };
 
@@ -95,7 +95,7 @@ export function Post() {
         .get(url)
         .then((res) => {
           setData(res.data);
-          console.log(res.data);
+          // console.log(res.data);
           setSearch(true);
           setIsLoaded(false);
         })
