@@ -12,7 +12,7 @@ from datetime import date, timedelta
 import time
 from utils import *
 from dateutil import parser
-# from infer_predict import *
+from infer_predict import *
 
 PATH_SAVE_CSV = 'crawlVnExp-temp-da.csv'
 
@@ -586,11 +586,11 @@ def predict_comment():
 if __name__ == '__main__':
     start = time.time()
 
-    crawl_all_n_days(40)
+    # crawl_all_n_days(40)
     # crawlAllThreeDays()
     # crawl_all_a_week()
     # crawl_all_a_month()
-    # predict_comment()
+    predict_comment()
 
     # top_topic_in_week()
     # top_topic_in_month()

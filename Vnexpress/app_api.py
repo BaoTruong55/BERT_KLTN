@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-# from infer_predict import *
+from infer_predict import *
 from crawl_post import *
 from crawl_vnexpress import get_info_post
 from model_vnexpress import *
@@ -183,7 +183,10 @@ class VnexpressInDatabase(Resource):
         id_post, title, description, thumbnail_url = get_info_post_crawl(url)
         post = Post.objects(idPost=id_post).first()
 
-        if post == None:
+        if post != None:
+            sentiment = sentiment_in_posts([post])
+
+        if post == None or (len(sentiment['comments_pos']) == 0 and len(sentiment['comments_neg']) == 0):
             post, tags, topic = get_info_post(url, id_post)
             if tags != None:
                 for tag in tags:
@@ -197,26 +200,36 @@ class VnexpressInDatabase(Resource):
                 topic.save()
 
             comments = get_comments(id_post)
-
+            print(comments)
             for index, comment in enumerate(comments, start=1):
                 if comment not in post.comments:
                     post.comments.append(comment)
+                post.save()
 
-            return {"error": "The article not predict comment"}
-
-        sentiment = sentiment_in_posts([post])
-        if len(sentiment['comments_pos']) != 0 and len(sentiment['comments_neg']) != 0:
             return {"error": "The article not predict comments"}
 
-        print(sentiment)
         output = {
             "title": title,
             "description": description,
             "thumbnailUrl": thumbnail_url,
             "pos": len(sentiment['comments_pos']),
             "neg": len(sentiment['comments_neg']),
-            "commentPos": list(map(lambda item: item.comments, sentiment['comments_pos'])),
-            "commentNeg": list(map(lambda item: tiem.comments, sentiment['comments_neg']))
+            "commentPos": list(map(
+                lambda item:
+                {
+                    "data_text": item.comment,
+                    "label": item.label
+                },
+                sentiment['comments_pos']
+            )),
+            "commentNeg": list(map(
+                lambda item:
+                {
+                    "data_text": item.comment,
+                    "label": item.label
+                },
+                sentiment['comments_neg']
+            )),
         }
 
         return Response(
