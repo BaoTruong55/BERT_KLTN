@@ -410,39 +410,33 @@ def get_info_post_by_category(category, from_date, to_date):
     return remove_duplicate(info_posts)
 
 
-def filter_posts_by_date(posts_source, date_from, date_to):
-    posts = list(filter(
-        lambda item:
-            item.publishTime <= parser.parse(date_to) and
-            item.publishTime >= parser.parse(date_from),
-        posts_source
-    ))
-    return posts
-
-
-def posts_in_topic(id, date_from, date_to):
-    posts_in_topic = Topic.objects.get(idTopic=id).posts
-    return filter_posts_by_date(posts_in_topic, date_from, date_to)
-
-
-def posts_in_tag(id, date_from, date_to):
-    posts_in_tag = Tag.objects.get(idTag=id).posts
-    return filter_posts_by_date(posts_in_tag, date_from, date_to)
+def format_date(date):
+    return str(f'{date:%m/%d/%Y}')
 
 
 def top_topics(days):
     today = format_date(date.today())
     from_date = format_date(date.today() - timedelta(days=days))
     topics = Topic.objects()
+    topics = list(
+        filter(lambda item: item.title.lower().find('chính trị') == -1, topics))
 
+    total_topic = len(topics)
     topics_obj = []
-    for topic in topics:
+
+    for index, topic in enumerate(topics, start=1):
+        print("[{index}/{total}] - {title}".format(index=index,
+                                                   total=total_topic, title=topic.title))
         topics_obj.append({
             "topic": topic,
-            "posts": posts_in_topic(topic.idTopic, from_date, today)
+            "posts": topic.get_posts_by_date(
+                from_date,
+                today
+            )
         })
 
-    topics_obj = list(filter(lambda item: len(item["posts"]) > 0, topics_obj))
+    topics_obj = list(filter(lambda item: len(
+        item["posts"]) > 0, list(topics_obj)))
     topics_obj.sort(key=lambda item: len(item["posts"]), reverse=True)
 
     topics_result = list(map(lambda item: item["topic"], topics_obj[:30]))
@@ -457,17 +451,28 @@ def top_topics(days):
 def top_tags(days):
     today = format_date(date.today())
     from_date = format_date(date.today() - timedelta(days=days))
-    tags = Tag.objects()
 
+    tags = Tag.objects()
+    tags = list(
+        filter(lambda item: item.name.lower().find('chính trị') == -1, tags))
+    print(len(tags))
+    total_tags = len(tags)
     tags_obj = []
 
-    for tag in tags:
+    for index, tag in enumerate(tags, start=1):
+        print("[{index}/{total}] - {name}".format(index=index,
+                                                  total=total_tags, name=tag.name))
         tags_obj.append({
             "tag": tag,
-            "posts": posts_in_tag(tag.idTag, from_date, today)
+            "posts": tag.get_posts_by_date(
+                from_date,
+                today
+            )
+
         })
 
-    tags_obj = list(filter(lambda item: len(item["posts"]) > 10, tags_obj))
+    tags_obj = list(filter(lambda item: len(
+        item["posts"]) > 10, list(tags_obj)))
     tags_obj.sort(key=lambda item: len(item["posts"]), reverse=True)
 
     tags_result = list(map(lambda item: item["tag"], tags_obj[:30]))
@@ -585,11 +590,11 @@ def random_comments(comments, size):
 
 
 def predict_comment():
-    count_comment = 1000
-    while count_comment == 1000:
+    count_comment = 5000
+    while count_comment == 5000:
         comments = Comment.objects(label=None)
-        comments = random_comments(comments, 1000)
-        count_commentc = len(comments)
+        comments = random_comments(comments, 5000)
+        count_comment = len(comments)
         if len(comments) > 0:
             comment_text = list(map(GET_COMMENT_TEXT, comments))
             comment_id = list(map(GET_COMMENT_ID, comments))
