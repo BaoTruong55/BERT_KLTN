@@ -590,6 +590,7 @@ def random_comments(comments, size):
 
 
 def predict_comment():
+
     count_comment = 5000
     while count_comment == 5000:
         comments = Comment.objects(label=None)
@@ -615,7 +616,6 @@ if __name__ == '__main__':
     # crawl_all_a_week()
     # crawl_all_a_month()
     predict_comment()
-
     # top_topic_in_week()
     # top_topic_in_month()
     # top_tag_in_week()
