@@ -144,4 +144,3 @@ class Category(Document):
     def get_posts_by_date(self, date_from, date_to):
         posts = filter_posts_by_date(self.posts, date_from, date_to)
         return posts
-

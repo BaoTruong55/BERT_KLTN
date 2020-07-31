@@ -13,7 +13,7 @@ from datetime import date, timedelta
 import time
 from utils import *
 from dateutil import parser
-from infer_predict import *
+# from infer_predict import *
 
 PATH_SAVE_CSV = 'crawlVnExp-temp-da.csv'
 
@@ -71,6 +71,16 @@ def get_info_tag(list_tag):
     return tags
 
 
+def choice_script(scripts):
+    for script in scripts:
+        topic_id = re.findall("{'article_topic_ID':'(.*?)'}", str(script))
+        topic = re.findall("{'article_topic':'(.*?)'}", str(script))
+        tag_id = re.findall("{'tag_id':'(.*?)'}", str(script))
+        if len(topic_id) != 0 or len(topic) != 0 or len(tag_id) != 0:
+            return str(script)
+    return ""
+
+
 def get_info_post(url, id_post):
     post = Post.objects(idPost=id_post).first()
     if post != None:
@@ -80,22 +90,23 @@ def get_info_post(url, id_post):
     soup = BeautifulSoup(content.text, 'html.parser')
 
     # script have info topicid, article topic, tag id
-    script = soup.find_all('script')[3]
 
-    topic_id = re.findall("{'article_topic_ID':'(.*?)'}", script.text)
+    script = choice_script(soup.find_all('script'))
+
+    topic_id = re.findall("{'article_topic_ID':'(.*?)'}", script)
     if len(topic_id) != 0:
         topic_id = topic_id[0]
     else:
         topic_id = ''
 
-    article_topic = re.findall("{'article_topic':'(.*?)'}", script.text)
+    article_topic = re.findall("{'article_topic':'(.*?)'}", script)
     if len(article_topic) != 0:
         article_topic = '-'.join(unmark_vietnamese(
             article_topic[0].lower()).split(' '))
     else:
         article_topic = ''
 
-    tag_ids = re.findall("{'tag_id':'(.*?)'}", script.text)
+    tag_ids = re.findall("{'tag_id':'(.*?)'}", script)
     if len(tag_ids) != 0:
         tag_ids = tag_ids[0].split(', ')
     else:
@@ -104,6 +115,7 @@ def get_info_post(url, id_post):
     info_tags = None
     if len(tag_ids) != 0:
         info_tags = get_info_tag(tag_ids)
+    print(info_tags)
 
     info_topic = None
     if topic_id != '':
@@ -535,7 +547,8 @@ def crawl_all_n_days(n):
     today = format_date(date.today())
     from_date = format_date(date.today() - timedelta(days=n))
 
-    info_posts = get_info_post_by_category(category, from_date, today)
+    info_posts = get_info_post_by_date(
+        "https://vnexpress.net/chu-de/covid-19-1299-p{page}", from_date)
     total_post = len(info_posts)
     print("="*20 + "get comment" + "="*20)
     total = 1
@@ -590,7 +603,6 @@ def random_comments(comments, size):
 
 
 def predict_comment():
-
     count_comment = 5000
     while count_comment == 5000:
         comments = Comment.objects(label=None)
@@ -611,11 +623,12 @@ def predict_comment():
 if __name__ == '__main__':
     start = time.time()
 
-    # crawl_all_n_days(40)
+    crawl_all_n_days(30)
     # crawlAllThreeDays()
     # crawl_all_a_week()
     # crawl_all_a_month()
-    predict_comment()
+    # predict_comment()
+
     # top_topic_in_week()
     # top_topic_in_month()
     # top_tag_in_week()

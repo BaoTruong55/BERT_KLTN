@@ -3,7 +3,7 @@ from flask import Flask, request, Response
 from flask_restful import Resource, Api
 from json import dumps
 from flask import jsonify
-from infer_predict import *
+# from infer_predict import *
 from crawl_post import *
 from crawl_vnexpress import get_info_post, get_comments
 from model_vnexpress import *
