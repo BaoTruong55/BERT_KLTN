@@ -263,22 +263,25 @@ class Covid(Resource):
 
 class TopTopics(Resource):
     def get(self):
-        top_topic = TopTopic.objects(
-            unitTime='month'
-        ).order_by('-created').first()
-        topics = list(map(
-            lambda item: {
-                "id": item.idTopic,
-                "title": "-".join(item.title.split('-')[:-1]),
-                "description": item.description,
-                "count_posts": len(
-                    item.get_posts_by_date(
-                        top_topic.dateFrom,
-                        top_topic.dateTo
-                    )
-                ),
-            }, list(top_topic.topics)
-        ))
+        # top_topic = TopTopic.objects(
+        #     unitTime='month'
+        # ).order_by('-created').first()
+        # topics = list(map(
+        #     lambda item: {
+        #         "id": item.idTopic,
+        #         "title": "-".join(item.title.split('-')[:-1]),
+        #         "description": item.description,
+        #         "count_posts": len(
+        #             item.get_posts_by_date(
+        #                 top_topic.dateFrom,
+        #                 top_topic.dateTo
+        #             )
+        #         ),
+        #     }, list(top_topic.topics)
+        # ))
+
+        with open('top_topic.json') as json_file:
+            tags = json.load(json_file)
         return Response(
             json.dumps(topics),
             mimetype='application/json'
@@ -287,22 +290,25 @@ class TopTopics(Resource):
 
 class TopTags(Resource):
     def get(self):
-        top_tag = TopTag.objects(
-            unitTime='month'
-        ).order_by('-created').first()
-        tags = list(map(
-            lambda item: {
-                "id": item.idTag,
-                "title": item.name,
-                "url": item.url,
-                "count_posts": len(
-                    item.get_posts_by_date(
-                        top_tag.dateFrom,
-                        top_tag.dateTo
-                    )
-                ),
-            }, list(top_tag.tags)
-        ))
+        # top_tag = TopTag.objects(
+        #     unitTime='month'
+        # ).order_by('-created').first()
+        # tags = list(map(
+        #     lambda item: {
+        #         "id": item.idTag,
+        #         "title": item.name,
+        #         "url": item.url,
+        #         "count_posts": len(
+        #             item.get_posts_by_date(
+        #                 top_tag.dateFrom,
+        #                 top_tag.dateTo
+        #             )
+        #         ),
+        #     }, list(top_tag.tags)
+        # ))
+
+        with open('top_tag.json') as json_file:
+            tags = json.load(json_file)
         return Response(
             json.dumps(tags),
             mimetype='application/json'

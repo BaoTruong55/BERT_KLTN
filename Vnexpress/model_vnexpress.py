@@ -30,18 +30,24 @@ def format_date(date):
     return str(f'{date:%m/%d/%Y}')
 
 
+def check_post(date_from, date_to):
+    def filter_post(item):
+        try:
+            return item['publishTime'] != None and \
+                item.publishTime <= parser.parse(date_to) + timedelta(days=1) and \
+                item.publishTime >= parser.parse(date_from),
+        except:
+            return False
+    return filter_post
+
+
 def filter_posts_by_date(postsSource, date_from, date_to):
     if type(date_from) is datetime:
         date_from = format_date(date_from)
 
     if type(date_to) is datetime:
         date_to = format_date(date_to)
-
-    posts = list(filter(
-        lambda item:
-            item.publishTime <= parser.parse(date_to) + timedelta(days=1) and
-            item.publishTime >= parser.parse(date_from), list(postsSource)
-    ))
+    posts = list(filter(check_post(date_from, date_to), list(postsSource)))
     return posts
 
 

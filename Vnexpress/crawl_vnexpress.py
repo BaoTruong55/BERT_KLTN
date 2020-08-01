@@ -422,126 +422,6 @@ def get_info_post_by_category(category, from_date, to_date):
     return remove_duplicate(info_posts)
 
 
-def format_date(date):
-    return str(f'{date:%m/%d/%Y}')
-
-
-def top_topics(days):
-    today = format_date(date.today())
-    from_date = format_date(date.today() - timedelta(days=days))
-    topics = Topic.objects()
-    topics = list(
-        filter(lambda item: item.title.lower().find('chính trị') == -1, topics))
-
-    total_topic = len(topics)
-    topics_obj = []
-
-    for index, topic in enumerate(topics, start=1):
-        print("[{index}/{total}] - {title}".format(index=index,
-                                                   total=total_topic, title=topic.title))
-        topics_obj.append({
-            "topic": topic,
-            "posts": topic.get_posts_by_date(
-                from_date,
-                today
-            )
-        })
-
-    topics_obj = list(filter(lambda item: len(
-        item["posts"]) > 0, list(topics_obj)))
-    topics_obj.sort(key=lambda item: len(item["posts"]), reverse=True)
-
-    topics_result = list(map(lambda item: item["topic"], topics_obj[:30]))
-    posts_result = sum(
-        list(map(lambda item: item["posts"], topics_obj[:30])),
-        []
-    )
-
-    return topics_result, posts_result, from_date, today
-
-
-def top_tags(days):
-    today = format_date(date.today())
-    from_date = format_date(date.today() - timedelta(days=days))
-
-    tags = Tag.objects()
-    tags = list(
-        filter(lambda item: item.name.lower().find('chính trị') == -1, tags))
-    print(len(tags))
-    total_tags = len(tags)
-    tags_obj = []
-
-    for index, tag in enumerate(tags, start=1):
-        print("[{index}/{total}] - {name}".format(index=index,
-                                                  total=total_tags, name=tag.name))
-        tags_obj.append({
-            "tag": tag,
-            "posts": tag.get_posts_by_date(
-                from_date,
-                today
-            )
-
-        })
-
-    tags_obj = list(filter(lambda item: len(
-        item["posts"]) > 10, list(tags_obj)))
-    tags_obj.sort(key=lambda item: len(item["posts"]), reverse=True)
-
-    tags_result = list(map(lambda item: item["tag"], tags_obj[:30]))
-    posts_result = sum(
-        list(map(lambda item: item["posts"], tags_obj[:30])), [])
-
-    return tags_result, posts_result, from_date, today
-
-
-def top_tag_in_week():
-    tags, posts, date_from, date_to = top_tags(7)
-    top_tag = TopTag(
-        unitTime="week",
-        tags=tags,
-        posts=posts,
-        dateFrom=date_from,
-        dateTo=date_to
-    )
-    top_tag.save()
-
-
-def top_tag_in_month():
-    tags, posts, date_from, date_to = top_tags(30)
-    top_tag = TopTag(
-        unitTime="month",
-        tags=tags,
-        posts=posts,
-        dateFrom=date_from,
-        dateTo=date_to
-    )
-    top_tag.save()
-
-
-def top_topic_in_week():
-    topics, posts, date_from, date_to = top_topics(7)
-    top_topic = TopTopic(
-        unitTime="week",
-        topics=topics,
-        posts=posts,
-        dateFrom=date_from,
-        dateTo=date_to
-    )
-    top_topic.save()
-
-
-def top_topic_in_month():
-    topics, posts, date_from, date_to = top_topics(30)
-    top_topic = TopTopic(
-        unitTime="month",
-        topics=topics,
-        posts=posts,
-        dateFrom=date_from,
-        dateTo=date_to
-    )
-    top_topic.save()
-
-
 def crawl_all_n_days(n):
     category = get_category_from_json()
     today = format_date(date.today())
@@ -585,55 +465,13 @@ def crawl_all_a_month():
     crawl_all_n_days(30)
 
 
-def random_comments(comments, size):
-    start = time.time()
-    import random
-    comments = list(comments)
-    count_comment = len(comments)
-    number_random = random.sample(
-        range(0, count_comment), min(size, count_comment))
-    print("get random comments")
-
-    result = list(map(lambda index: comments[index], number_random))
-
-    end = time.time()
-    print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
-
-    return result
-
-
-def predict_comment():
-    count_comment = 5000
-    while count_comment == 5000:
-        comments = Comment.objects(label=None)
-        comments = random_comments(comments, 5000)
-        count_comment = len(comments)
-        if len(comments) > 0:
-            comment_text = list(map(GET_COMMENT_TEXT, comments))
-            comment_id = list(map(GET_COMMENT_ID, comments))
-            df = nomalize_data_comment_vnexpress(comment_id, comment_text)
-            df_result = predict_data(df)
-            for comment in comments:
-                comment.label = df_result[df_result['id']
-                                          == comment.idComment]['label']
-                comment.save()
-    print('Done')
-
-
 if __name__ == '__main__':
     start = time.time()
 
-    crawl_all_n_days(30)
+    # crawl_all_n_days(30)
     # crawlAllThreeDays()
     # crawl_all_a_week()
     # crawl_all_a_month()
-    # predict_comment()
 
-    # top_topic_in_week()
-    # top_topic_in_month()
-    # top_tag_in_week()
-    # top_tag_in_month()
-    # comment = Comment.objects(idComment="35285047").first()
-    # print(comment)
     end = time.time()
     print(time.strftime("%H:%M:%S", time.gmtime(end - start)))
