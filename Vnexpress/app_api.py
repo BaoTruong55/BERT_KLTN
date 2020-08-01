@@ -47,7 +47,7 @@ def filter_posts_by_date(postsSource, date_from, date_to):
     if type(date_to) is datetime:
         date_to = format_date(date_to)
 
-    posts = list(filter(check_post(date_from, date_to), list(postsSource))
+    posts = list(filter(check_post(date_from, date_to), list(postsSource)))
     return posts
 
 
