@@ -1,36 +1,36 @@
+from transformers.modeling_utils import *
+from sklearn.linear_model import LogisticRegression
+from utils import *
+from vncorenlp import VnCoreNLP
+from fairseq.data import Dictionary
+from fairseq.data.encoders.fastbpe import fastBPE
+import argparse
+import torch.nn.functional as F
+import torch.utils.data
+import matplotlib.pyplot as plt
+import torch
+from transformers import *
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder
+import os
+import pickle
+import numpy as np
+import json
+from torch import nn
 import pandas as pd
 from models import *
 from tqdm import tqdm
 tqdm.pandas()
-from torch import nn
-import json
-import numpy as np
-import pickle
-import os
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from transformers import *
-import torch
 torch.cuda.empty_cache()
-import matplotlib.pyplot as plt
-import torch.utils.data
-import torch.nn.functional as F
-import argparse
-from transformers.modeling_utils import * 
-from fairseq.data.encoders.fastbpe import fastBPE
-from fairseq.data import Dictionary
-from vncorenlp import VnCoreNLP
-from utils import *
-import pickle
-from sklearn.linear_model import LogisticRegression
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--train_path', type=str, default='./data/train.csv')
 parser.add_argument('--dict_path', type=str, default="./phobert/dict.txt")
 parser.add_argument('--config_path', type=str, default="./phobert/config.json")
 parser.add_argument('--rdrsegmenter_path', type=str, required=True)
-parser.add_argument('--pretrained_path', type=str, default='./phobert/model.bin')
+parser.add_argument('--pretrained_path', type=str,
+                    default='./phobert/model.bin')
 parser.add_argument('--max_sequence_length', type=int, default=256)
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--accumulation_steps', type=int, default=5)
@@ -39,15 +39,26 @@ parser.add_argument('--fold', type=int, default=0)
 parser.add_argument('--seed', type=int, default=69)
 parser.add_argument('--lr', type=float, default=3e-5)
 parser.add_argument('--ckpt_path', type=str, default='./models')
-parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",type=str, help='path to fastBPE BPE')
+parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",
+                    type=str, help='path to fastBPE BPE')
 
 args = parser.parse_args()
+args = parser.parse_args("""
+    --fold 0
+    --train_path ./Data/train.csv
+    --dict_path ./PhoBERT/PhoBERT_base_transformers/dict.txt
+    --config_path ./PhoBERT/PhoBERT_base_transformers/config.json
+    --bpe-codes ./PhoBERT/PhoBERT_base_transformers/bpe.codes
+    --pretrained_path ./PhoBERT/PhoBERT_base_transformers/model.bin
+    --ckpt_path ./Models
+    --rdrsegmenter_path ./VnCoreNLP/VnCoreNLP-1.1.1.jar
+""".split())
 bpe = fastBPE(args)
 rdrsegmenter = VnCoreNLP(
     args.rdrsegmenter_path,
     annotators="wseg",
     max_heap_size='-Xmx500m'
-) 
+)
 
 seed_everything(69)
 
@@ -58,7 +69,8 @@ config = RobertaConfig.from_pretrained(
     num_labels=1
 )
 
-model_bert = RobertaForAIViVN.from_pretrained(args.pretrained_path, config=config)
+model_bert = RobertaForAIViVN.from_pretrained(
+    args.pretrained_path, config=config)
 model_bert.cuda()
 
 if torch.cuda.device_count():
@@ -68,18 +80,18 @@ if torch.cuda.device_count():
 else:
     tsfm = model_bert.roberta
 
-# Load the dictionary  
+# Load the dictionary
 vocab = Dictionary()
 vocab.add_from_file(args.dict_path)
 
 # Load training data
-train_df = pd.read_csv(args.train_path,sep='\t').fillna("###")
+train_df = pd.read_csv(args.train_path, sep='\t').fillna("###")
 train_df.text = train_df.text.progress_apply(
     lambda x: ' '.join(
         [' '.join(sent) for sent in rdrsegmenter.tokenize(x)]
     )
 )
-
+print(train_df.text)
 y = train_df.label.values
 X_train = convert_lines(
     train_df,
@@ -87,8 +99,8 @@ X_train = convert_lines(
     bpe,
     args.max_sequence_length
 )
-print(y)
-print(X_train)
+print("value label", y)
+print("X_train", X_train)
 
 # Creating optimizer and lr schedulers
 param_optimizer = list(model_bert.named_parameters())
@@ -110,7 +122,8 @@ optimizer_grouped_parameters = [
     }
 ]
 
-num_train_optimization_steps = int(args.epochs*len(train_df)/args.batch_size/args.accumulation_steps)
+num_train_optimization_steps = int(
+    args.epochs*len(train_df)/args.batch_size/args.accumulation_steps)
 optimizer = AdamW(
     optimizer_grouped_parameters,
     lr=args.lr,
@@ -119,8 +132,8 @@ optimizer = AdamW(
 
 scheduler = get_linear_schedule_with_warmup(
     optimizer,
-    num_warmup_steps = 100,
-    num_training_steps = num_train_optimization_steps
+    num_warmup_steps=100,
+    num_training_steps=num_train_optimization_steps
 )  # PyTorch scheduler
 
 scheduler0 = get_constant_schedule(optimizer)  # PyTorch scheduler
@@ -128,10 +141,12 @@ scheduler0 = get_constant_schedule(optimizer)  # PyTorch scheduler
 if not os.path.exists(args.ckpt_path):
     os.mkdir(args.ckpt_path)
 
-splits = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=123).split(X_train, y))
+splits = list(StratifiedKFold(n_splits=4, shuffle=True,
+                              random_state=123).split(X_train, y))
 
 for fold, (train_idx, val_idx) in enumerate(splits):
     print("Training for fold {}".format(fold))
+
     best_score = 0
     if fold != args.fold:
         continue
@@ -153,7 +168,7 @@ for fold, (train_idx, val_idx) in enumerate(splits):
         ),
         torch.tensor(
             y[val_idx],
-            dtype=torch.long    
+            dtype=torch.long
         )
     )
 
@@ -178,13 +193,13 @@ for fold, (train_idx, val_idx) in enumerate(splits):
         val_preds = []
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
-            batch_size = args.batch_size,
+            batch_size=args.batch_size,
             shuffle=True
         )
         valid_loader = torch.utils.data.DataLoader(
             valid_dataset,
             batch_size=args.batch_size,
-            suffle=False
+            shuffle=False
         )
         avg_loss = 0.
         avg_accuracy = 0.
@@ -196,18 +211,18 @@ for fold, (train_idx, val_idx) in enumerate(splits):
             leave=False
         )
 
-        for i,(x_batch, y_batch) in pbar:
+        for i, (x_batch, y_batch) in pbar:
             model_bert.train()
             y_pred = model_bert(
                 x_batch.cuda(),
-                attention_mask=(x_batch>0).cuda()
+                attention_mask=(x_batch > 0).cuda()
             )
 
-            loss =  F.binary_cross_entropy_with_logits(
+            loss = F.binary_cross_entropy_with_logits(
                 y_pred.view(-1).cuda(),
                 y_batch.float().cuda()
             )
-            
+
             loss = loss.mean()
             loss.backward()
             if i % args.accumulation_steps == 0 or i == len(pbar) - 1:
@@ -218,7 +233,7 @@ for fold, (train_idx, val_idx) in enumerate(splits):
                 else:
                     scheduler0.step()
             lossf = loss.item()
-            pbar.set_postfix(loss = lossf)
+            pbar.set_postfix(loss=lossf)
             avg_loss += loss.item() / len(train_loader)
 
         model_bert.eval()
@@ -228,10 +243,10 @@ for fold, (train_idx, val_idx) in enumerate(splits):
             leave=False
         )
 
-        for i,(x_batch, y_batch) in pbar:
+        for i, (x_batch, y_batch) in pbar:
             y_pred = model_bert(
                 x_batch.cuda(),
-                attention_mask=(x_batch>0).cuda()
+                attention_mask=(x_batch > 0).cuda()
             )
             y_pred = y_pred.squeeze().detach().cpu().numpy()
             val_preds = np.concatenate([val_preds, np.atleast_1d(y_pred)])
@@ -240,7 +255,8 @@ for fold, (train_idx, val_idx) in enumerate(splits):
 
         best_th = 0
         score = f1_score(y[val_idx], val_preds > 0.5)
-        print(f"\nAUC = {roc_auc_score(y[val_idx], val_preds):.4f}, F1 score @0.5 = {score:.4f}")
+        print(
+            f"\nAUC = {roc_auc_score(y[val_idx], val_preds):.4f}, F1 score @0.5 = {score:.4f}")
         if score >= best_score:
             torch.save(
                 model_bert.state_dict(),

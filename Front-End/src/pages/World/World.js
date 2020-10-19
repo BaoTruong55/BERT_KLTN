@@ -46,8 +46,8 @@ export const World = () => {
               for (let i = 0; i < tracker_by_province.length; i++) {
                 mapDataTam.push([
                   tracker_by_province[i].name,
-                  tracker_by_province[i].cases,
-                  tracker_by_province[i].cases,
+                  +tracker_by_province[i].cases,
+                  +tracker_by_province[i].cases,
                 ]);
               }
               setMapData(mapDataTam);

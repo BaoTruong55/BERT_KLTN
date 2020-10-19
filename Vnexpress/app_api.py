@@ -52,9 +52,9 @@ def filter_posts_by_date(postsSource, date_from, date_to):
 
 
 def sentiment_in_posts(posts):
-    comments=sum(list(map(Post.get_comments, posts)), [])
-    comments_pos=list(filter(Comment.is_label_pos, list(comments)))
-    comments_neg=list(filter(Comment.is_label_neg, list(comments)))
+    comments = sum(list(map(Post.get_comments, posts)), [])
+    comments_pos = list(filter(Comment.is_label_pos, list(comments)))
+    comments_neg = list(filter(Comment.is_label_neg, list(comments)))
 
     return {
         "comments_pos": comments_pos,
@@ -63,14 +63,14 @@ def sentiment_in_posts(posts):
 
 
 def classify_comment_by_date(posts, date_from, date_to):
-    classify_post={}
+    classify_post = {}
     for single_date in daterange(parser.parse(date_from), parser.parse(date_to)):
-        classify_post[single_date.strftime('%m/%d/%Y')]=[]
+        classify_post[single_date.strftime('%m/%d/%Y')] = []
 
     for post in posts:
         classify_post[post.publishTime.strftime('%m/%d/%Y')].append(post)
 
-    list_post=list(
+    list_post = list(
         map(
             lambda item: {
                 "title": item.title,
@@ -85,16 +85,16 @@ def classify_comment_by_date(posts, date_from, date_to):
 
     list_post.sort(key=lambda item: item['count_comment'], reverse=True)
 
-    classify_comment={}
+    classify_comment = {}
     for key, value_posts in classify_post.items():
-        comments=sum(list(map(Post.get_comments, value_posts)), [])
+        comments = sum(list(map(Post.get_comments, value_posts)), [])
 
-        comments_neg=list(filter(Comment.is_label_neg, comments))
-        comments_pos=list(filter(Comment.is_label_pos, comments))
+        comments_neg = list(filter(Comment.is_label_neg, comments))
+        comments_pos = list(filter(Comment.is_label_pos, comments))
         # comments_text_neg = list(map(GET_COMMENT, comments_neg))
         # comments_text_pos = list(map(GET_COMMENT, comments_pos))
 
-        posts_map=list(
+        posts_map = list(
             map(
                 lambda item: {
                     "title": item.title,
@@ -107,14 +107,14 @@ def classify_comment_by_date(posts, date_from, date_to):
             )
         )
 
-        classify_comment[key]={
+        classify_comment[key] = {
             "count_post": len(posts_map),
             "posts": posts_map,
             "pos": len(comments_pos),
             "neg": len(comments_neg),
         }
 
-    classify_comment_format=[]
+    classify_comment_format = []
     for key in classify_comment:
         classify_comment_format.append({
             "date": key,
@@ -125,49 +125,49 @@ def classify_comment_by_date(posts, date_from, date_to):
 
 
 def tag(id, date_from, date_to):
-    posts_in_tag=Tag.objects.get(idTag=id).posts
-    posts=filter_posts_by_date(posts_in_tag, date_from, date_to)
+    posts_in_tag = Tag.objects.get(idTag=id).posts
+    posts = filter_posts_by_date(posts_in_tag, date_from, date_to)
     return classify_comment_by_date(posts, date_from, date_to)
 
 
 def category(id, date_from, date_to):
-    posts_in_category=Category.objects.get(idCategory=id).posts
-    posts=filter_posts_by_date(posts_in_category, date_from, date_to)
+    posts_in_category = Category.objects.get(idCategory=id).posts
+    posts = filter_posts_by_date(posts_in_category, date_from, date_to)
     return classify_comment_by_date(posts, date_from, date_to)
 
 
 def topic(id, date_from, date_to):
-    posts_in_topic=Topic.objects.get(idTopic=id).posts
-    posts=filter_posts_by_date(posts_in_topic, date_from, date_to)
+    posts_in_topic = Topic.objects.get(idTopic=id).posts
+    posts = filter_posts_by_date(posts_in_topic, date_from, date_to)
     return classify_comment_by_date(posts, date_from, date_to)
 
 
 def posts_in_topic(id, date_from, date_to):
-    posts_in_topic=Topic.objects.get(idTopic=id).posts
+    posts_in_topic = Topic.objects.get(idTopic=id).posts
     return Topic.get_posts_by_date(posts_in_topic, date_from, date_to)
 
 
 def posts_in_tag(id, date_from, date_to):
-    posts_in_tag=Tag.objects.get(idTag=id).posts
+    posts_in_tag = Tag.objects.get(idTag=id).posts
     return Tag.get_posts_by_date(posts_in_tag, date_from, date_to)
 
 
 class Vnexpress(Resource):
     def get(self):
-        url=request.args.get('url')
-        id_post, title, description, thumbnail_url=get_info_post_crawl(url)
-        comments=get_comments_crawl(id_post)
+        url = request.args.get('url')
+        id_post, title, description, thumbnail_url = get_info_post_crawl(url)
+        comments = get_comments_crawl(id_post)
 
         if len(comments) == 0:
             return {"error": "The article has no comments"}
 
-        df=normalize_data(comments)
-        df_result=predict_data(df)
-        df_output=DataFrame(df_result, columns=['data_text', 'label'])
-        df_negatives=df_output[df_output['label'] == 0]
-        df_possitives=df_output[df_output['label'] == 1]
+        df = normalize_data(comments)
+        df_result = predict_data(df)
+        df_output = DataFrame(df_result, columns=['data_text', 'label'])
+        df_negatives = df_output[df_output['label'] == 0]
+        df_possitives = df_output[df_output['label'] == 1]
 
-        output={
+        output = {
             "title": title,
             "description": description,
             "thumbnailUrl": thumbnail_url,
@@ -185,15 +185,15 @@ class Vnexpress(Resource):
 
 class VnexpressInDatabase(Resource):
     def get(self):
-        url=request.args.get('url')
-        id_post, title, description, thumbnail_url=get_info_post_crawl(url)
-        post=Post.objects(idPost=id_post).first()
+        url = request.args.get('url')
+        id_post, title, description, thumbnail_url = get_info_post_crawl(url)
+        post = Post.objects(idPost=id_post).first()
 
         if post != None:
-            sentiment=sentiment_in_posts([post])
+            sentiment = sentiment_in_posts([post])
 
         if post == None or (len(sentiment['comments_pos']) == 0 and len(sentiment['comments_neg']) == 0):
-            post, tags, topic=get_info_post(url, id_post)
+            post, tags, topic = get_info_post(url, id_post)
             if tags != None:
                 for tag in tags:
                     if post not in tag.posts:
@@ -205,7 +205,7 @@ class VnexpressInDatabase(Resource):
                     topic.posts.append(post)
                 topic.save()
 
-            comments=get_comments(id_post)
+            comments = get_comments(id_post)
 
             for index, comment in enumerate(comments, start=1):
                 if comment not in post.comments:
@@ -214,7 +214,7 @@ class VnexpressInDatabase(Resource):
 
             return {"error": "The article not predict comments"}
 
-        output={
+        output = {
             "title": title,
             "description": description,
             "thumbnailUrl": thumbnail_url,
@@ -246,16 +246,16 @@ class VnexpressInDatabase(Resource):
 
 class Covid(Resource):
     def get(self):
-        date_to=request.args.get('dateto')
-        date_from=request.args.get('datefrom')
-        sentiment_by_date, top_post=tag('1266196', date_from, date_to)
-        total_pos=0
-        total_neg=0
+        date_to = request.args.get('dateto')
+        date_from = request.args.get('datefrom')
+        sentiment_by_date, top_post = tag('1266196', date_from, date_to)
+        total_pos = 0
+        total_neg = 0
         for item in sentiment_by_date:
-            total_pos=total_pos + item['data']['pos']
-            total_neg=total_neg + item['data']['neg']
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
 
-        result={
+        result = {
             "total_pos": total_pos,
             "total_neg": total_neg,
             "top_post": top_post,
@@ -287,7 +287,7 @@ class TopTopics(Resource):
         # ))
 
         with open('top_topic.json') as json_file:
-            topics=json.load(json_file)
+            topics = json.load(json_file)
         return Response(
             json.dumps(topics),
             mimetype='application/json'
@@ -314,7 +314,7 @@ class TopTags(Resource):
         # ))
 
         with open('top_tag.json') as json_file:
-            tags=json.load(json_file)
+            tags = json.load(json_file)
         return Response(
             json.dumps(tags),
             mimetype='application/json'
@@ -323,7 +323,7 @@ class TopTags(Resource):
 
 class Categories(Resource):
     def get(self):
-        category=Category.objects()
+        category = Category.objects()
 
         if category == None:
             return Response(
@@ -333,7 +333,7 @@ class Categories(Resource):
                 mimetype='application/json'
             )
 
-        listCategory=list(map(
+        listCategory = list(map(
             lambda item: {
                 "idCategory": item.idCategory,
                 "title": item.title,
@@ -349,17 +349,17 @@ class Categories(Resource):
 
 class CategorySentiment(Resource):
     def get(self):
-        idCategory=request.args.get('idcategory')
-        date_to=request.args.get('dateto')
-        date_from=request.args.get('datefrom')
-        sentiment_by_date, top_post=category(idCategory, date_from, date_to)
-        total_pos=0
-        total_neg=0
+        idCategory = request.args.get('idcategory')
+        date_to = request.args.get('dateto')
+        date_from = request.args.get('datefrom')
+        sentiment_by_date, top_post = category(idCategory, date_from, date_to)
+        total_pos = 0
+        total_neg = 0
         for item in sentiment_by_date:
-            total_pos=total_pos + item['data']['pos']
-            total_neg=total_neg + item['data']['neg']
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
 
-        result={
+        result = {
             "total_pos": total_pos,
             "total_neg": total_neg,
             "top_post": top_post,
@@ -373,8 +373,8 @@ class CategorySentiment(Resource):
 
 class TagSentiment(Resource):
     def get(self):
-        id_tag=request.args.get('idtag')
-        top_tag=TopTag.objects(
+        id_tag = request.args.get('idtag')
+        top_tag = TopTag.objects(
             unitTime='month'
         ).order_by('-created').first()
 
@@ -387,23 +387,23 @@ class TagSentiment(Resource):
             )
 
         if request.args.get('dateto') != None:
-            date_to=request.args.get('dateto')
+            date_to = request.args.get('dateto')
         else:
-            date_to=format_date(top_tag.dateTo)
+            date_to = format_date(top_tag.dateTo)
 
         if request.args.get('datefrom') != None:
-            date_from=request.args.get('datefrom')
+            date_from = request.args.get('datefrom')
         else:
-            date_from=format_date(top_tag.dateFrom)
+            date_from = format_date(top_tag.dateFrom)
 
-        sentiment_by_date, top_post=tag(id_tag, date_from, date_to)
-        total_pos=0
-        total_neg=0
+        sentiment_by_date, top_post = tag(id_tag, date_from, date_to)
+        total_pos = 0
+        total_neg = 0
         for item in sentiment_by_date:
-            total_pos=total_pos + item['data']['pos']
-            total_neg=total_neg + item['data']['neg']
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
 
-        result={
+        result = {
             "total_pos": total_pos,
             "total_neg": total_neg,
             "top_post": top_post,
@@ -417,9 +417,9 @@ class TagSentiment(Resource):
 
 class TopicSentiment(Resource):
     def get(self):
-        id_topic=request.args.get('idtopic')
+        id_topic = request.args.get('idtopic')
 
-        top_topic=TopTopic.objects(
+        top_topic = TopTopic.objects(
             unitTime='month'
         ).order_by('-created').first()
 
@@ -432,23 +432,23 @@ class TopicSentiment(Resource):
             )
 
         if request.args.get('dateto') != None:
-            date_to=request.args.get('dateto')
+            date_to = request.args.get('dateto')
         else:
-            date_to=format_date(top_topic.dateTo)
+            date_to = format_date(top_topic.dateTo)
 
         if request.args.get('datefrom') != None:
-            date_from=request.args.get('datefrom')
+            date_from = request.args.get('datefrom')
         else:
-            date_from=format_date(top_topic.dateFrom)
+            date_from = format_date(top_topic.dateFrom)
 
-        sentiment_by_date, top_post=topic(id_topic, date_from, date_to)
-        total_pos=0
-        total_neg=0
+        sentiment_by_date, top_post = topic(id_topic, date_from, date_to)
+        total_pos = 0
+        total_neg = 0
         for item in sentiment_by_date:
-            total_pos=total_pos + item['data']['pos']
-            total_neg=total_neg + item['data']['neg']
+            total_pos = total_pos + item['data']['pos']
+            total_neg = total_neg + item['data']['neg']
 
-        result={
+        result = {
             "total_pos": total_pos,
             "total_neg": total_neg,
             "top_post": top_post,
@@ -471,8 +471,8 @@ api.add_resource(TopicSentiment, SUB_URL + '/topicsentiment')
 api.add_resource(CategorySentiment, SUB_URL + '/categorysentiment')
 
 if __name__ == '__main__':
-    ENVIRONMENT_DEBUG=os.environ.get("APP_DEBUG", True)
-    ENVIRONMENT_PORT=os.environ.get("APP_PORT", 5000)
+    ENVIRONMENT_DEBUG = os.environ.get("APP_DEBUG", True)
+    ENVIRONMENT_PORT = os.environ.get("APP_PORT", 5000)
     application.run(
         host='0.0.0.0',
         port=ENVIRONMENT_PORT,

@@ -1,38 +1,47 @@
+from utils import *
+from transformers.modeling_utils import *
+from vncorenlp import VnCoreNLP
+from fairseq.data import Dictionary
+from fairseq.data.encoders.fastbpe import fastBPE
+import argparse
+import torch.nn.functional as F
+import torch.utils.data
+import matplotlib.pyplot as plt
+import torch
+from transformers import *
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder
+import os
+import numpy as np
+import json
+from torch import nn
 import pandas as pd
 from models import *
 from tqdm import tqdm
 tqdm.pandas()
-from torch import nn
-import json
-import numpy as np
-import os
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from transformers import *
-import torch
-import matplotlib.pyplot as plt
-import torch.utils.data
-import torch.nn.functional as F
-import argparse
-from transformers.modeling_utils import * 
-from fairseq.data.encoders.fastbpe import fastBPE
-from fairseq.data import Dictionary
-from vncorenlp import VnCoreNLP
-from utils import * 
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--test_path', type=str, default='./data/test.csv')
 parser.add_argument('--dict_path', type=str, default="./phobert/dict.txt")
 parser.add_argument('--config_path', type=str, default="./phobert/config.json")
 parser.add_argument('--rdrsegmenter_path', type=str, required=True)
-parser.add_argument('--pretrained_path', type=str, default='./phobert/model.bin')
+parser.add_argument('--pretrained_path', type=str,
+                    default='./phobert/model.bin')
 parser.add_argument('--max_sequence_length', type=int, default=256)
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--ckpt_path', type=str, default='./models')
-parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",type=str, help='path to fastBPE BPE')
-
-args = parser.parse_args()
+parser.add_argument('--bpe-codes', default="./phobert/bpe.codes",
+                    type=str, help='path to fastBPE BPE')
+args = parser.parse_args("""
+    --test_path ./Data/test.csv
+    --dict_path ./PhoBERT/PhoBERT_base_transformers/dict.txt
+    --config_path ./PhoBERT/PhoBERT_base_transformers/config.json
+    --bpe-codes ./PhoBERT/PhoBERT_base_transformers/bpe.codes
+    --pretrained_path ./PhoBERT/PhoBERT_base_transformers/model.bin
+    --ckpt_path ./Models
+    --rdrsegmenter_path ./VnCoreNLP/VnCoreNLP-1.1.1.jar
+""".split())
 bpe = fastBPE(args)
 rdrsegmenter = VnCoreNLP(
     args.rdrsegmenter_path,

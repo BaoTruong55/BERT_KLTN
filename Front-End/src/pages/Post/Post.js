@@ -84,7 +84,7 @@ export function Post() {
     if (link !== '') {
       let url = '';
       if (process.env.REACT_APP_ENVIROMENT === 'development') {
-        url = `${process.env.REACT_APP_API_BASE_URL}vnexpress?url=` + link;
+        url = `localhost:5000/vnexpress?url=` + link;
       } else if (process.env.REACT_APP_ENVIROMENT === 'production') {
         url = `${process.env.REACT_APP_API_BASE_URL}vnexpress/post?url=` + link;
       }

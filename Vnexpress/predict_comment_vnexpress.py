@@ -1,17 +1,22 @@
-
-from flask import Flask, request, Response
-from flask_restful import Resource, Api
-from json import dumps
-from flask import jsonify
-# from infer_predict import *
-from crawl_post import *
-from crawl_vnexpress import get_info_post, get_comments
+import urllib.request
+import json
+import random
+from collections import namedtuple
+import csv
+from bs4 import BeautifulSoup  # BeautifulSoup is in bs4 package
+import requests
+import dateutil.parser
 from model_vnexpress import *
-from flask_cors import CORS, cross_origin
-from datetime import datetime, date, timedelta
-from dateutil import parser
+import re
+import unidecode
+from datetime import date, timedelta
 import time
-import os
+from utils import *
+from dateutil import parser
+from flask import jsonify
+from infer_predict import *
+
+import time
 
 
 def random_comments(comments, size):
@@ -33,7 +38,8 @@ def random_comments(comments, size):
 
 def predict_comment():
     count_comment = 5000
-    while count_comment == 5000:
+    while True:
+        time.sleep(2.4)
         comments = Comment.objects(label=None)
         comments = random_comments(comments, 5000)
         count_comment = len(comments)
